@@ -46,12 +46,12 @@ public class EditorFragment extends Fragment {
 //        Typeface mTextRobotoTf = ResourcesCompat.getFont(getContext(), R.font.roboto_medium);
 
         //loading font from assest
-        Typeface mEmojiTypeFace = Typeface.createFromAsset(getContext().getAssets(), "emojione-android.ttf");
+        //Typeface mEmojiTypeFace = Typeface.createFromAsset(getContext().getAssets(), "emojione-android.ttf");
 
 
         PhotoEditor mPhotoEditor = new PhotoEditor.Builder(getContext(), mPhotoEditorView)
                 .setDefaultTextTypeface(Typeface.DEFAULT)
-                .setDefaultEmojiTypeface(mEmojiTypeFace)
+                //.setDefaultEmojiTypeface(mEmojiTypeFace)
                 .setPinchTextScalable(true)
                 .build();
     }
