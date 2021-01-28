@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.carista.R;
+import com.carista.data.realtimedb.models.CommentModel;
 import com.carista.utils.Data;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -27,19 +28,22 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.carista.photoeditor.photoeditor.TextEditorDialogFragment.TAG;
 
 
 public class UserFragment extends Fragment {
@@ -97,35 +101,32 @@ public class UserFragment extends Fragment {
         UserInfo userInfo = FirebaseAuth.getInstance().getCurrentUser().getProviderData().get(0);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference userRef = mDatabase.child("/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid());
-        userRef.addValueEventListener(new ValueEventListener() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference posts = db.collection("users").document(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        posts.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot avatar = dataSnapshot.child("avatar");
-                DataSnapshot nickname = dataSnapshot.child("nickname");
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+                Object avatar = snapshot.get("avatar");
+                Object nickname = snapshot.get("nickname");
 
-                if (nickname.getValue() == null)
+                if (nickname==null)
                     if (userInfo.getProviderId().equals("phone")) {
                         userNickname.setText("Welcome, " + user.getPhoneNumber());
                     } else {
                         userNickname.setText("Welcome, " + user.getEmail());
                     }
                 else
-                    userNickname.setText("Welcome, " + nickname.getValue());
+                    userNickname.setText("Welcome, " + nickname.toString());
 
-                if (avatar.getValue() != null)
-                    Picasso.get().load(avatar.getValue().toString()).into(userAvatar);
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("ERROR", "Failed to read value.", error.toException());
+                if (avatar != null)
+                    Picasso.get().load(avatar.toString()).into(userAvatar);
             }
         });
+
         initChooser();
 
 

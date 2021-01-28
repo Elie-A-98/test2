@@ -9,13 +9,17 @@ import android.view.ViewGroup;
 
 import com.carista.R;
 import com.carista.data.db.AppDatabase;
+import com.carista.data.realtimedb.models.CommentModel;
 import com.carista.data.realtimedb.models.PostModel;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +28,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.carista.photoeditor.photoeditor.TextEditorDialogFragment.TAG;
 
 public class UserPostsFragment extends Fragment {
     private UserPostsRecyclerViewAdapter adapter;
@@ -51,37 +60,32 @@ public class UserPostsFragment extends Fragment {
     @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference userPostsRef = mDatabase.child("posts");
-
-        userPostsRef.addValueEventListener(new ValueEventListener() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference posts = db.collection("posts");
+        posts.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(@NotNull DataSnapshot dataSnapshot) {
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
                 adapter.clearData();
-
-                /*try {
+                try {
                     Thread thread = new Thread(() -> AppDatabase.getInstance().postDao().deleteAll());
                     thread.start();
                     thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
 
-                for (DataSnapshot post : dataSnapshot.getChildren()) {
-                    if(post.child("userId").getValue().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-                        String id = post.getKey();
-                        PostModel postModel = new PostModel(id, post.getValue());
+                for (QueryDocumentSnapshot post : value) {
+                    if(post.get("userId").toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                        String id = post.getId();
+                        PostModel postModel = new PostModel(id, post.getData());
                         adapter.addPost(postModel);
                     }
                     //AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                 }
-            }
-
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("ERROR", "Failed to read value.", error.toException());
             }
         });
     }

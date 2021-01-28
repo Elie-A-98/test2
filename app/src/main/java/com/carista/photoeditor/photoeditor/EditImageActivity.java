@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import ja.burhanrashid52.photoeditor.CustomEffect;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
@@ -100,8 +101,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         handleIntentImage(mPhotoEditorView.getSource());
 
-        //mWonderFont = Typeface.createFromAsset(getAssets(), "beyond_wonderland.ttf");
-
         mPropertiesBSFragment = new PropertiesBSFragment();
         mEmojiBSFragment = new EmojiBSFragment();
         mStickerBSFragment = new StickerBSFragment();
@@ -117,14 +116,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         mRvFilters.setLayoutManager(llmFilters);
         mRvFilters.setAdapter(mFilterViewAdapter);
 
-
-        //Typeface mTextRobotoTf = ResourcesCompat.getFont(this, R.font.roboto_medium);
-        //Typeface mEmojiTypeFace = Typeface.createFromAsset(getAssets(), "emojione-android.ttf");
-
         mPhotoEditor = new PhotoEditor.Builder(this, mPhotoEditorView)
                 .setPinchTextScalable(true) // set flag to make text scalable when pinch
-                //.setDefaultTextTypeface(mTextRobotoTf)
-                //.setDefaultEmojiTypeface(mEmojiTypeFace)
                 .build(); // build photo editor sdk
 
         mPhotoEditor.setOnPhotoEditorListener(this);
@@ -306,9 +299,16 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private void saveImage() {
         if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...");
-            File file = new File(Environment.getExternalStorageDirectory()
-                    + File.separator + ""
-                    + System.currentTimeMillis() + ".png");
+            File direct = new File(Environment.getExternalStorageDirectory() + "/Carista");
+            if (!direct.exists()) {
+                File wallpaperDirectory = new File("/sdcard/Carista/");
+                wallpaperDirectory.mkdirs();
+            }
+
+            File file = new File("/sdcard/Carista/", System.currentTimeMillis() + ".png");
+            if (file.exists()) {
+                file.delete();
+            }
             try {
                 file.createNewFile();
 
@@ -344,9 +344,16 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private void uploadPost() {
 
         if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            File file = new File(Environment.getExternalStorageDirectory()
-                    + File.separator + ""
-                    + System.currentTimeMillis() + ".png");
+            File direct = new File(Environment.getExternalStorageDirectory() + "/Carista");
+            if (!direct.exists()) {
+                File wallpaperDirectory = new File("/sdcard/Carista/");
+                wallpaperDirectory.mkdirs();
+            }
+
+            File file = new File("/sdcard/Carista/", System.currentTimeMillis() + ".png");
+            if (file.exists()) {
+                file.delete();
+            }
             try {
                 file.createNewFile();
 
@@ -581,8 +588,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         if (mIsFilterVisible) {
             showFilter(false);
             mTxtCurrentTool.setText(R.string.app_name);
-        } else if (!mPhotoEditor.isCacheEmpty()) {
-            showSaveDialog();
+        } else if (mPhotoEditor.getBrushDrawableMode()==true) {
+            mPhotoEditor.setBrushDrawingMode(false);
+            mTxtCurrentTool.setText("Carista");
         } else {
             preventClosingEditor();
         }

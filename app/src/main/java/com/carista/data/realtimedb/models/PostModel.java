@@ -6,10 +6,11 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.Exclude;
-import com.google.firebase.database.PropertyName;
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.PropertyName;
 import com.google.gson.annotations.Expose;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -67,14 +68,13 @@ public class PostModel {
         this.timestamp = (long) _data.get("timestamp");
         this.userId = (String) _data.get("userId");
         if (_data.get("likes") != null) {
-            this.likes = ((HashMap) _data.get("likes")).size();
-            for (Object like : ((HashMap) _data.get("likes")).values().toArray()) {
+            this.likes = ((ArrayList<String>) _data.get("likes")).size();
+            for (Object like : ((ArrayList<String>) _data.get("likes"))) {
                 if (like.toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                     this.likedByUser = true;
                     break;
                 }
             }
         }
-
     }
 }

@@ -20,14 +20,16 @@ import android.widget.EditText;
 
 import com.carista.R;
 import com.carista.data.realtimedb.models.CommentModel;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
+
+import static com.carista.photoeditor.photoeditor.TextEditorDialogFragment.TAG;
 
 
 public class CommentsFragment extends Fragment {
@@ -64,26 +66,22 @@ public class CommentsFragment extends Fragment {
 
         String postId=getActivity().getIntent().getExtras().getString("postId");
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference postRef=mDatabase.child("posts");
-        postRef.addValueEventListener(new ValueEventListener() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference posts = db.collection("posts").document(postId);
+        posts.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
                 adapter.clearData();
-                for(DataSnapshot postIds: snapshot.getChildren()){
-                    if(postIds.getKey().equals(postId)){
-                        if(postIds.child("comments")==null)
-                            return;
-                        for(DataSnapshot comment: postIds.child("comments").getChildren()){
-                            adapter.addComment(new CommentModel(comment.getValue()));
-                        }
+                List<Object> comments = (List<Object>) snapshot.get("comments");
+                if(comments != null){
+                    for (Object doc : comments){
+                        adapter.addComment(new CommentModel(doc));
                     }
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
