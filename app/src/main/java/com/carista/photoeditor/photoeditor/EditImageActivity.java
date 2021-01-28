@@ -40,6 +40,7 @@ import com.carista.photoeditor.photoeditor.filters.FilterViewAdapter;
 import com.carista.photoeditor.photoeditor.tools.EditingToolsAdapter;
 import com.carista.photoeditor.photoeditor.tools.ToolType;
 import com.carista.utils.Data;
+import com.carista.utils.FirestoreData;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -390,7 +391,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         uploadTask.addOnFailureListener(exception -> Snackbar.make(getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
                                 .addOnSuccessListener(taskSnapshot -> {
                                     taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
-                                        Data.uploadPost(edittext.getText().toString().trim(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                        FirestoreData.uploadPost(edittext.getText().toString().trim(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
                                         //mPhotoEditorView.getSource().setImageBitmap(null);
                                         edittext.setText("");
                                         Snackbar.make(getCurrentFocus(), R.string.success_upload, Snackbar.LENGTH_SHORT).show();

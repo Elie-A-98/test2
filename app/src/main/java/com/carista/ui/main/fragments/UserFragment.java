@@ -21,6 +21,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.carista.R;
 import com.carista.utils.Data;
+import com.carista.utils.FirestoreData;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -32,6 +33,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -97,35 +104,53 @@ public class UserFragment extends Fragment {
         UserInfo userInfo = FirebaseAuth.getInstance().getCurrentUser().getProviderData().get(0);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference userRef = mDatabase.child("/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid());
-        userRef.addValueEventListener(new ValueEventListener() {
+//        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+//        DatabaseReference userRef = mDatabase.child("/users/" + FirebaseAuth.getInstance().getCurrentUser().getUid());
+//        userRef.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                DataSnapshot avatar = dataSnapshot.child("avatar");
+//                DataSnapshot nickname = dataSnapshot.child("nickname");
+//
+//                if (nickname.getValue() == null)
+//                    if (userInfo.getProviderId().equals("phone")) {
+//                        userNickname.setText("Welcome, " + user.getPhoneNumber());
+//                    } else {
+//                        userNickname.setText("Welcome, " + user.getEmail());
+//                    }
+//                else
+//                    userNickname.setText("Welcome, " + nickname.getValue());
+//
+//                if (avatar.getValue() != null)
+//                    Picasso.get().load(avatar.getValue().toString()).into(userAvatar);
+//
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError error) {
+//                // Failed to read value
+//                Log.w("ERROR", "Failed to read value.", error.toException());
+//            }
+//        });
+
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("users").whereEqualTo("id",FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot avatar = dataSnapshot.child("avatar");
-                DataSnapshot nickname = dataSnapshot.child("nickname");
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(DocumentSnapshot documentSnapshot: value.getDocuments()){
+                    String avatar= String.valueOf(documentSnapshot.get("avatar"));
+                    String nickname = String.valueOf(documentSnapshot.get("nickname"));
 
-                if (nickname.getValue() == null)
-                    if (userInfo.getProviderId().equals("phone")) {
-                        userNickname.setText("Welcome, " + user.getPhoneNumber());
-                    } else {
-                        userNickname.setText("Welcome, " + user.getEmail());
-                    }
-                else
-                    userNickname.setText("Welcome, " + nickname.getValue());
+                    userNickname.setText("Welcome, " + nickname);
 
-                if (avatar.getValue() != null)
-                    Picasso.get().load(avatar.getValue().toString()).into(userAvatar);
+                    if(!avatar.isEmpty())
+                        Picasso.get().load(avatar).into(userAvatar);
 
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("ERROR", "Failed to read value.", error.toException());
+                }
             }
         });
+
         initChooser();
 
 
@@ -144,8 +169,9 @@ public class UserFragment extends Fragment {
             if (newNickname == null || newNickname.isEmpty())
                 return;
             usernameEdit.setText("");
-            Data.uploadNickname(newNickname);
+            FirestoreData.uploadNickname(newNickname);
             Snackbar.make(getActivity().getCurrentFocus(), "Username changed!", Snackbar.LENGTH_SHORT).show();
+            userNickname.setText("Welcome, " + newNickname);
             usernameEdit.setVisibility(View.GONE);
             usernameChangeButton.setVisibility(View.GONE);
         });
@@ -190,7 +216,7 @@ public class UserFragment extends Fragment {
             UploadTask uploadTask = imageRef.putBytes(imdata);
             uploadTask.addOnFailureListener(exception -> Snackbar.make(getActivity().getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
                     .addOnSuccessListener(taskSnapshot -> {
-                        taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> Data.uploadAvatarLink(uri.toString()));
+                        taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> FirestoreData.uploadAvatarLink(uri.toString()));
                     });
         }
     }

@@ -1,9 +1,11 @@
 package com.carista.ui.main;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -11,6 +13,7 @@ import android.widget.EditText;
 import com.carista.R;
 import com.carista.data.realtimedb.models.CommentModel;
 import com.carista.utils.Data;
+import com.carista.utils.FirestoreData;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,6 +22,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 public class CommentsActivity extends AppCompatActivity {
@@ -44,19 +52,15 @@ public class CommentsActivity extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference userRef = mDatabase.child("/users/" + user.getUid());
-        userRef.addValueEventListener(new ValueEventListener() {
+        FirebaseFirestore firestore=FirebaseFirestore.getInstance();
+        firestore.collection("users").whereEqualTo("id", user.getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot avatar = dataSnapshot.child("avatar");
-                if (avatar.getValue() != null)
-                    Picasso.get().load(avatar.getValue().toString()).into(myCommentAvatar);
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("ERROR", "Failed to read value.", error.toException());
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(DocumentSnapshot documentSnapshot: value.getDocuments()){
+                    String avatar = (String) documentSnapshot.get("avatar");
+                    if(!avatar.isEmpty())
+                        Picasso.get().load(avatar).into(myCommentAvatar);
+                }
             }
         });
 
@@ -67,7 +71,7 @@ public class CommentsActivity extends AppCompatActivity {
             if(comment.isEmpty())
                 return;
             CommentModel commentModel=new CommentModel(comment, FirebaseAuth.getInstance().getCurrentUser().getUid());
-            Data.addComment(postId,commentModel);
+            FirestoreData.addComment(postId,commentModel);
             myComment.setText("");
         });
 
