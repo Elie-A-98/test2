@@ -3,6 +3,7 @@
     <string name="tab_text_1">Posts</string>
     <string name="tab_text_2">Upload</string>
     <string name="posts_fragment_title">Posts</string>
+    <string name="carista_post">Carista</string>
 
     <string name="api_root" translatable="false">http://192.168.1.65:5000/</string>
 
