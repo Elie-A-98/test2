@@ -29,11 +29,11 @@ public class UserPostsFragment extends Fragment {
     private boolean isUserLikesOnly;
 
     public UserPostsFragment() {
-
+        // Required empty public constructor
     }
 
     public UserPostsFragment(boolean isUserLikesOnly) {
-        // Required empty public constructor
+
         this.isUserLikesOnly = isUserLikesOnly;
     }
 
