@@ -27,7 +27,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class CommentsFragment extends Fragment {
@@ -64,26 +72,17 @@ public class CommentsFragment extends Fragment {
 
         String postId=getActivity().getIntent().getExtras().getString("postId");
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference postRef=mDatabase.child("posts");
-        postRef.addValueEventListener(new ValueEventListener() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("posts").whereEqualTo("id", postId).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                adapter.clearData();
-                for(DataSnapshot postIds: snapshot.getChildren()){
-                    if(postIds.getKey().equals(postId)){
-                        if(postIds.child("comments")==null)
-                            return;
-                        for(DataSnapshot comment: postIds.child("comments").getChildren()){
-                            adapter.addComment(new CommentModel(comment.getValue()));
-                        }
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(DocumentSnapshot documentSnapshot: value.getDocuments()){
+                    ArrayList<HashMap<String,Object>> comments= (ArrayList<HashMap<String, Object>>) documentSnapshot.get("comments");
+                    adapter.clearData();
+                    for(int i=0;i<comments.size();i++){
+                        adapter.addComment(new CommentModel((comments.get(i))));
                     }
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }

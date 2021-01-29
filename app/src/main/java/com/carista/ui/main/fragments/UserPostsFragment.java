@@ -10,14 +10,27 @@ import android.view.ViewGroup;
 import com.carista.R;
 import com.carista.data.db.AppDatabase;
 import com.carista.data.realtimedb.models.PostModel;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,10 +40,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class UserPostsFragment extends Fragment {
     private UserPostsRecyclerViewAdapter adapter;
-
-    public UserPostsFragment() {
+    private boolean isUserLikesOnly;
+    public UserPostsFragment(boolean isUserLikesOnly) {
         // Required empty public constructor
+        this.isUserLikesOnly=isUserLikesOnly;
     }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,38 +66,39 @@ public class UserPostsFragment extends Fragment {
     @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference userPostsRef = mDatabase.child("posts");
-
-        userPostsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NotNull DataSnapshot dataSnapshot) {
-                adapter.clearData();
-
-                /*try {
-                    Thread thread = new Thread(() -> AppDatabase.getInstance().postDao().deleteAll());
-                    thread.start();
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
-
-                for (DataSnapshot post : dataSnapshot.getChildren()) {
-                    if(post.child("userId").getValue().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-                        String id = post.getKey();
-                        PostModel postModel = new PostModel(id, post.getValue());
-                        adapter.addPost(postModel);
+        if(!isUserLikesOnly){
+            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+            Query q= firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING);
+            q.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                    adapter.clearData();
+                    for(DocumentSnapshot documentSnapshot: value.getDocuments()){
+                        if(documentSnapshot.get("userId").equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                            String id = String.valueOf(documentSnapshot.get("id"));
+                            adapter.addPost(new PostModel(id,documentSnapshot.getData()));
+                        }
                     }
-                    //AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                 }
-            }
+            });
+        }
+        else{
+            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+            firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                    String id="";
+                    adapter.clearData();
+                    for(DocumentSnapshot documentSnapshot: value.getDocuments()){
+                        ArrayList<String> likes = (ArrayList<String>) documentSnapshot.get("likes");
+                        if(likes.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                            id = String.valueOf(documentSnapshot.get("id"));
+                            adapter.addPost(new PostModel(id,documentSnapshot.getData()));
+                        }
 
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("ERROR", "Failed to read value.", error.toException());
-            }
-        });
+                    }
+                }
+            });
+        }
     }
 }
