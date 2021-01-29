@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class SplashScreen extends AppCompatActivity {
     public static final int RC_SIGN_IN = 100;
-    private static final int SPLASH_TIME_OUT = 3000;
+    private static final int SPLASH_TIME_OUT = 1000;
     private SplashScreen me=this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

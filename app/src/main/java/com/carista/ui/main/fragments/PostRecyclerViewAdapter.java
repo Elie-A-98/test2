@@ -14,9 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
 import com.carista.ui.main.CommentsActivity;
-import com.carista.utils.Data;
 import com.carista.utils.FirestoreData;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -35,7 +33,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
 
     public void addPost(PostModel postModel) {
         this.items.add(postModel);
-        this.notifyItemChanged(this.items.size());
+        notifyDataSetChanged();
     }
 
     public void addPost(List<PostModel> postModels) {
@@ -51,12 +49,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         PostModel m = this.items.get(position);
         StorageReference imageRef = storageRef.child(m.id + ".jpg");
 
-        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                FirestoreData.removePost(m.id);
-            }
-        });
+        imageRef.delete().addOnSuccessListener(aVoid -> FirestoreData.removePost(m.id));
         this.items.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, items.size());
@@ -81,7 +74,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = this.items.get(position);
         holder.mLikeCheckbox.setChecked(false);
-        FirestoreData.setPostNicknameTitle(this.items.get(position).userId,this.items.get(position).title,holder.mTitleView);
+        FirestoreData.setPostNicknameTitle(this.items.get(position).userId, this.items.get(position).title, holder.mTitleView);
         FirestoreData.getLikesCount(this.items.get(position).id, holder.mLikeCounterView);
         FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
 
@@ -92,11 +85,10 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         });
 
         holder.mLikeCheckbox.setOnClickListener(view -> {
-            int likePosition=holder.getAdapterPosition();
-            if(holder.mLikeCheckbox.isChecked()){
+            int likePosition = holder.getAdapterPosition();
+            if (holder.mLikeCheckbox.isChecked()) {
                 FirestoreData.addLike(this.items.get(likePosition).id);
-            }
-            else{
+            } else {
                 FirestoreData.removeLike(this.items.get(likePosition).id);
             }
         });
