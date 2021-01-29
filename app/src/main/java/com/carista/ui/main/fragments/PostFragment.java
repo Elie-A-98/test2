@@ -124,7 +124,7 @@ public class PostFragment extends Fragment {
                     }
                 }
 
-                if(!recyclerView.canScrollVertically(-1) && recyclerView.canScrollVertically(1)){
+                if(!recyclerView.canScrollVertically(-1)){
                     FirebaseFirestore firestore = FirebaseFirestore.getInstance();
                     firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).limit(5).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override

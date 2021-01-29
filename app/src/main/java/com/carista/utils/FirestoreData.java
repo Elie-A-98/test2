@@ -2,6 +2,7 @@ package com.carista.utils;
 
 import android.text.Html;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -174,6 +175,7 @@ public class FirestoreData {
                             view1.setText(R.string.only_you_like_this);
                     } else
                         view.setChecked(false);
+
                     break;
                 }
             }
