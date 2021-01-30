@@ -6,9 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.main.PostActivity"
     >
-
-
-
     <androidx.cardview.widget.CardView
         android:id="@+id/view_post_card"
         android:layout_width="match_parent"
