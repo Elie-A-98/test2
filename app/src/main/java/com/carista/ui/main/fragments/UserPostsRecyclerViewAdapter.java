@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
+import com.carista.ui.main.PostActivity;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -74,6 +76,12 @@ public class UserPostsRecyclerViewAdapter extends RecyclerView.Adapter<UserPosts
         holder.mImageView.setOnLongClickListener(v -> {
             showQuickView(v,position);
             return false;
+        });
+
+        holder.mImageView.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), PostActivity.class);
+            intent.putExtra("postId",holder.mItem.id);
+            view.getContext().startActivity(intent);
         });
 
     }

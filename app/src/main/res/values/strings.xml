@@ -71,4 +71,7 @@
     <string name="comment_posted_success">Comment posted successfully!</string>
     <string name="login_error">Error logging in!</string>
     <string name="only_you_like_this">Only you like this</string>
+    <string name="post_view_title">Single Post View</string>
+    <string name="post_link">https://carista.web.app/post/</string>
+    <string name="copied_to_clipboard">Copied link to clipboard!</string>
 </resources>

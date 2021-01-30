@@ -1,12 +1,17 @@
 package com.carista.ui.main.fragments;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
@@ -15,7 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
 import com.carista.ui.main.CommentsActivity;
+import com.carista.ui.main.PostActivity;
 import com.carista.utils.FirestoreData;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -79,12 +86,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         FirestoreData.getLikesCount(this.items.get(position).id, holder.mLikeCounterView);
         FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
 
-        holder.mLikeCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-
-            }
-        });
 
         holder.mimgViewRemoveIcon.setOnClickListener(v -> {
             int position1 = holder.getAdapterPosition();
@@ -108,6 +109,28 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         });
 
         Picasso.get().load(items.get(position).image).resize(holder.mCardView.getWidth(), 600).centerCrop().into(holder.mImageView);
+        holder.mImageView.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), PostActivity.class);
+            intent.putExtra("postId",holder.mItem.id);
+            view.getContext().startActivity(intent);
+        });
+
+
+        holder.mShareCheckbox.setOnClickListener(view -> {
+            if(holder.mShareLayout.getVisibility()==View.GONE)
+                holder.mShareLayout.setVisibility(View.VISIBLE);
+            else
+                holder.mShareLayout.setVisibility(View.GONE);
+        });
+
+        holder.mShareLink.setText("https://carista.web.app/post/"+holder.mItem.id);
+
+        holder.mCopyCheckbox.setOnClickListener(view -> {
+            ClipboardManager clipboardManager = (ClipboardManager) view.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText("link",holder.mShareLink.getText().toString());
+            clipboardManager.setPrimaryClip(clipData);
+            Snackbar.make(view.getRootView(),R.string.copied_to_clipboard,Snackbar.LENGTH_SHORT).show();
+        });
     }
 
     @Override
@@ -123,7 +146,9 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         public final CardView mCardView;
         public PostModel mItem;
         public TextView mLikeCounterView;
-        public CheckBox mLikeCheckbox, mCommentCheckbox;
+        public CheckBox mLikeCheckbox, mCommentCheckbox, mShareCheckbox, mCopyCheckbox;
+        public EditText mShareLink;
+        public LinearLayout mShareLayout;
 
         public ViewHolder(View view) {
             super(view);
@@ -135,6 +160,10 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             mLikeCheckbox = view.findViewById(R.id.like_checkbox);
             mLikeCounterView = view.findViewById(R.id.likes_counter);
             mCommentCheckbox = view.findViewById(R.id.comment_checkbox);
+            mShareCheckbox = view.findViewById(R.id.share_checkbox);
+            mShareLink = view.findViewById(R.id.share_link);
+            mShareLayout = view.findViewById(R.id.share_layout);
+            mCopyCheckbox = view.findViewById(R.id.copy_to_clipboard);
             this.setIsRecyclable(false);
         }
     }
