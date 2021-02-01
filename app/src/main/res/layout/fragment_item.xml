@@ -74,6 +74,15 @@
                         android:background="@drawable/ic_comment"
                         android:layout_margin="7dp"/>
 
+                    <CheckBox
+                        android:id="@+id/share_checkbox"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:button="@null"
+                        android:checked="false"
+                        android:background="@drawable/ic_share"
+                        android:layout_margin="7dp"/>
+
                 </LinearLayout>
 
                 <TextView
@@ -89,7 +98,36 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Title"
-                    android:layout_marginLeft="5dp"/>
+                    android:layout_marginLeft="5dp" />
+
+                <LinearLayout
+                    android:id="@+id/share_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <EditText
+                        android:id="@+id/share_link"
+                        android:layout_marginTop="10dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:singleLine="true"
+                        android:focusable="false"
+                        android:background="@drawable/comment_post_layout"/>
+
+                    <CheckBox
+                        android:id="@+id/copy_to_clipboard"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:button="@null"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginLeft="3dp"
+                        android:background="@drawable/ic_copy_to_clipboard"/>
+
+                </LinearLayout>
 
             </LinearLayout>
 
