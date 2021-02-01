@@ -2,14 +2,16 @@ package com.carista.utils;
 
 import android.text.Html;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.carista.R;
+import com.carista.data.StickerItem;
+import com.carista.data.StickerPack;
 import com.carista.data.realtimedb.models.CommentModel;
+import com.carista.photoeditor.photoeditor.OnStickersPackLoad;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -215,6 +217,25 @@ public class FirestoreData {
                     }
                 }
             }
+        });
+    }
+
+    public static void getStickersPacks(OnStickersPackLoad onStickersPackLoad) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        ArrayList<StickerPack> stickerPacks = new ArrayList<>();
+        firestore.collection("stickers").addSnapshotListener((value, error) -> {
+            for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                String title = documentSnapshot.getString("title");
+                String icon = documentSnapshot.getString("icon");
+                ArrayList<StickerItem> items = new ArrayList<>();
+
+                ArrayList<HashMap<String, String>> _items = (ArrayList<HashMap<String, String>>) documentSnapshot.get("items");
+                for (HashMap<String, String> item : _items) {
+                    items.add(new StickerItem(item.get("name"), item.get("image")));
+                }
+                stickerPacks.add(new StickerPack(title, icon, items));
+            }
+            onStickersPackLoad.onStickersPacksFetching(stickerPacks);
         });
     }
 }
