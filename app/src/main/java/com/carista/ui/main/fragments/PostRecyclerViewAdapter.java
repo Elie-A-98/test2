@@ -1,14 +1,10 @@
 package com.carista.ui.main.fragments;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,7 +18,6 @@ import com.carista.data.realtimedb.models.PostModel;
 import com.carista.ui.main.CommentsActivity;
 import com.carista.ui.main.PostActivity;
 import com.carista.utils.FirestoreData;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -111,25 +106,19 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         Picasso.get().load(items.get(position).image).resize(holder.mCardView.getWidth(), 600).centerCrop().into(holder.mImageView);
         holder.mImageView.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), PostActivity.class);
-            intent.putExtra("postId",holder.mItem.id);
+            intent.putExtra("postId", holder.mItem.id);
             view.getContext().startActivity(intent);
         });
 
 
         holder.mShareCheckbox.setOnClickListener(view -> {
-            if(holder.mShareLayout.getVisibility()==View.GONE)
-                holder.mShareLayout.setVisibility(View.VISIBLE);
-            else
-                holder.mShareLayout.setVisibility(View.GONE);
-        });
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, view.getContext().getString(R.string.share_post_root_url) + holder.mItem.id);
+            sendIntent.setType("text/plain");
 
-        holder.mShareLink.setText("https://carista.web.app/post/"+holder.mItem.id);
-
-        holder.mCopyCheckbox.setOnClickListener(view -> {
-            ClipboardManager clipboardManager = (ClipboardManager) view.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clipData = ClipData.newPlainText("link",holder.mShareLink.getText().toString());
-            clipboardManager.setPrimaryClip(clipData);
-            Snackbar.make(view.getRootView(),R.string.copied_to_clipboard,Snackbar.LENGTH_SHORT).show();
+            Intent shareIntent = Intent.createChooser(sendIntent, holder.mItem.title);
+            view.getContext().startActivity(shareIntent);
         });
     }
 
@@ -146,7 +135,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         public final CardView mCardView;
         public PostModel mItem;
         public TextView mLikeCounterView;
-        public CheckBox mLikeCheckbox, mCommentCheckbox, mShareCheckbox, mCopyCheckbox;
+        public CheckBox mLikeCheckbox, mCommentCheckbox, mShareCheckbox;
         public EditText mShareLink;
         public LinearLayout mShareLayout;
 
@@ -163,7 +152,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             mShareCheckbox = view.findViewById(R.id.share_checkbox);
             mShareLink = view.findViewById(R.id.share_link);
             mShareLayout = view.findViewById(R.id.share_layout);
-            mCopyCheckbox = view.findViewById(R.id.copy_to_clipboard);
             this.setIsRecyclable(false);
         }
     }

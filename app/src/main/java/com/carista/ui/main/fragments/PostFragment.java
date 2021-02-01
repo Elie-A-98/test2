@@ -1,10 +1,8 @@
 package com.carista.ui.main.fragments;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,20 +21,11 @@ import com.carista.utils.Device;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.ArrayList;
 
 public class PostFragment extends Fragment {
 
@@ -79,7 +68,7 @@ public class PostFragment extends Fragment {
         firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).limit(5).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     try {
                         Thread thread = new Thread(() -> AppDatabase.getInstance().postDao().deleteAll());
                         thread.start();
@@ -88,11 +77,11 @@ public class PostFragment extends Fragment {
                         e.printStackTrace();
                     }
                     adapter.clearData();
-                    for(QueryDocumentSnapshot documentSnapshot: task.getResult()){
+                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         String id = String.valueOf(documentSnapshot.get("id"));
                         PostModel postModel = new PostModel(id, documentSnapshot.getData());
                         adapter.addPost(postModel);
-                        lastLazyItem=documentSnapshot;
+                        lastLazyItem = documentSnapshot;
                         AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                     }
                 }
@@ -103,11 +92,11 @@ public class PostFragment extends Fragment {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(!recyclerView.canScrollVertically(1) && recyclerView.canScrollVertically(-1)){
-                    if(lastLazyItem!=null){
+                if (!recyclerView.canScrollVertically(1) && recyclerView.canScrollVertically(-1)) {
+                    if (lastLazyItem != null) {
                         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
                         firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).startAfter(lastLazyItem).limit(5).get().addOnCompleteListener(task -> {
-                            if(task.isSuccessful()){
+                            if (task.isSuccessful()) {
                                 try {
                                     Thread thread = new Thread(() -> AppDatabase.getInstance().postDao().deleteAll());
                                     thread.start();
@@ -116,11 +105,11 @@ public class PostFragment extends Fragment {
                                     e.printStackTrace();
                                 }
 
-                                for(QueryDocumentSnapshot documentSnapshot: task.getResult()){
+                                for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                                     String id = String.valueOf(documentSnapshot.get("id"));
                                     PostModel postModel = new PostModel(id, documentSnapshot.getData());
                                     adapter.addPost(postModel);
-                                    lastLazyItem=documentSnapshot;
+                                    lastLazyItem = documentSnapshot;
                                     AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                                 }
                             }
@@ -130,11 +119,20 @@ public class PostFragment extends Fragment {
             }
         });
 
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary,R.color.semi_black_transparent, R.color.violet_color_picker);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.semi_black_transparent, R.color.violet_color_picker);
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
+
+            if (!Device.isNetworkAvailable(getContext())) {
+                Snackbar.make(getView().findViewById(R.id.list),
+                        R.string.network_unavailable,
+                        Snackbar.LENGTH_SHORT).show();
+                swipeRefreshLayout.setRefreshing(false);
+                return;
+            }
+
             new Handler().postDelayed(() -> firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).limit(5).get().addOnCompleteListener(task -> {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     try {
                         Thread thread = new Thread(() -> AppDatabase.getInstance().postDao().deleteAll());
                         thread.start();
@@ -143,16 +141,16 @@ public class PostFragment extends Fragment {
                         e.printStackTrace();
                     }
                     adapter.clearData();
-                    for(QueryDocumentSnapshot documentSnapshot: task.getResult()){
+                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         String id = String.valueOf(documentSnapshot.get("id"));
                         PostModel postModel = new PostModel(id, documentSnapshot.getData());
                         adapter.addPost(postModel);
-                        lastLazyItem=documentSnapshot;
+                        lastLazyItem = documentSnapshot;
                         AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                     }
                     swipeRefreshLayout.setRefreshing(false);
                 }
-            }),2000);
+            }), 2000);
         });
 
 
