@@ -106,7 +106,6 @@ public class UploadFragment extends Fragment {
                             titleEditText.setText("");
                             Snackbar.make(getView().findViewById(R.id.upload_layout),R.string.success_upload,Snackbar.LENGTH_SHORT).show();
                         });
-
                     });
         });
     }

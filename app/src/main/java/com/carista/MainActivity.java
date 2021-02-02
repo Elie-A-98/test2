@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         tabs.setSelectedTabIndicatorColor(Color.parseColor("#FF0000"));
-//        tabs.setSelectedTabIndicatorHeight((int) (5 * getResources().getDisplayMetrics().density));
         tabs.setTabTextColors(Color.parseColor("#727272"), Color.parseColor("#ffffff"));
 
         if (getIntent() != null && getIntent().getAction()!= null && getIntent().getAction().equals("com.carista.MainActivity.UserFragment"))

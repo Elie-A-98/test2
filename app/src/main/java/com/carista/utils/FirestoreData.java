@@ -30,6 +30,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FirestoreData {
+
     public static void uploadPost(String title, long id, String imageURL, String userId) {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         Map<String, Object> post = new HashMap<>();
