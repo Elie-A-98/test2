@@ -5,7 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
@@ -14,9 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
 import com.carista.ui.main.CommentsActivity;
-import com.carista.utils.Data;
-import com.carista.utils.Device;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.carista.ui.main.PostActivity;
+import com.carista.utils.FirestoreData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -35,7 +36,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
 
     public void addPost(PostModel postModel) {
         this.items.add(postModel);
-        this.notifyItemChanged(this.items.size());
+        notifyDataSetChanged();
     }
 
     public void addPost(List<PostModel> postModels) {
@@ -51,12 +52,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         PostModel m = this.items.get(position);
         StorageReference imageRef = storageRef.child(m.id + ".jpg");
 
-        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Data.removePost(m.id);
-            }
-        });
+        imageRef.delete().addOnSuccessListener(aVoid -> FirestoreData.removePost(m.id));
         this.items.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, items.size());
@@ -80,22 +76,11 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = this.items.get(position);
-        if (Device.isNetworkAvailable(holder.mView.getContext())) {
-            Data.setPostNicknameTitle(this.items.get(position).userId, this.items.get(position).title, holder.mTitleView);
-            Data.getLikesCount(this.items.get(position).id, holder.mLikeCounterView);
-            Data.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
-        } else {
-            holder.mLikeCounterView.setText(String.valueOf(this.items.get(position).likes));
-            holder.mTitleView.setText(this.items.get(position).title);
-            holder.mTitleView.setText(this.items.get(position).username);
-            if (this.items.get(position).likedByUser) {
-                holder.mLikeCheckbox.setChecked(true);
-                int likesNb = Integer.parseInt(holder.mLikeCounterView.getText().toString().split(" ")[0]);
-                if (likesNb > 1)
-                    holder.mLikeCounterView.setText("You and " + (likesNb - 1) + " others like this");
-                else holder.mLikeCounterView.setText("Only you like this");
-            }
-        }
+
+        FirestoreData.setPostNicknameTitle(this.items.get(position).userId, this.items.get(position).title, holder.mTitleView);
+        FirestoreData.getLikesCount(this.items.get(position).id, holder.mLikeCounterView);
+        FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
+
 
         holder.mimgViewRemoveIcon.setOnClickListener(v -> {
             int position1 = holder.getAdapterPosition();
@@ -106,9 +91,9 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         holder.mLikeCheckbox.setOnClickListener(view -> {
             int likePosition = holder.getAdapterPosition();
             if (holder.mLikeCheckbox.isChecked()) {
-                Data.addLike(this.items.get(likePosition).id);
+                FirestoreData.addLike(this.items.get(likePosition).id);
             } else {
-                Data.removeLike(this.items.get(likePosition).id);
+                FirestoreData.removeLike(this.items.get(likePosition).id);
             }
         });
 
@@ -119,6 +104,22 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         });
 
         Picasso.get().load(items.get(position).image).resize(holder.mCardView.getWidth(), 600).centerCrop().into(holder.mImageView);
+        holder.mImageView.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), PostActivity.class);
+            intent.putExtra("postId", holder.mItem.id);
+            view.getContext().startActivity(intent);
+        });
+
+
+        holder.mShareCheckbox.setOnClickListener(view -> {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, view.getContext().getString(R.string.share_post_root_url) + holder.mItem.id);
+            sendIntent.setType("text/plain");
+
+            Intent shareIntent = Intent.createChooser(sendIntent, holder.mItem.title);
+            view.getContext().startActivity(shareIntent);
+        });
     }
 
     @Override
@@ -134,7 +135,9 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         public final CardView mCardView;
         public PostModel mItem;
         public TextView mLikeCounterView;
-        public CheckBox mLikeCheckbox, mCommentCheckbox;
+        public CheckBox mLikeCheckbox, mCommentCheckbox, mShareCheckbox;
+        public EditText mShareLink;
+        public LinearLayout mShareLayout;
 
         public ViewHolder(View view) {
             super(view);
@@ -146,6 +149,10 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             mLikeCheckbox = view.findViewById(R.id.like_checkbox);
             mLikeCounterView = view.findViewById(R.id.likes_counter);
             mCommentCheckbox = view.findViewById(R.id.comment_checkbox);
+            mShareCheckbox = view.findViewById(R.id.share_checkbox);
+            mShareLink = view.findViewById(R.id.share_link);
+            mShareLayout = view.findViewById(R.id.share_layout);
+            this.setIsRecyclable(false);
         }
     }
 

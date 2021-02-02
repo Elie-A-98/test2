@@ -16,13 +16,13 @@ public class UserViewPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             case 0:
-                return new UserPostsFragment();
+                return new UserPostsFragment(false);
             case 1:
-                return new UserPostsFragment();
+                return new UserPostsFragment(true);
             case 2:
                 return new UserSettingsFragment();
         }
-        return new UserPostsFragment();
+        return new UserPostsFragment(false);
     }
 
     @Override

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.carista.R;
 import com.carista.data.realtimedb.models.CommentModel;
 import com.carista.utils.Data;
+import com.carista.utils.FirestoreData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<CommentsRe
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = this.items.get(position);
-        Data.setCommentAvatarNickname(holder.mItem, holder.commentAvatar, holder.commentNicknameText);
+        FirestoreData.setCommentAvatarNickname(holder.mItem, holder.commentAvatar, holder.commentNicknameText);
     }
 
     @Override

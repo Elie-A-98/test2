@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.carista.R;
+import com.carista.data.StickerPack;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,27 +28,31 @@ public class EditingToolsAdapter extends RecyclerView.Adapter<EditingToolsAdapte
 
     public EditingToolsAdapter(OnItemSelected onItemSelected) {
         mOnItemSelected = onItemSelected;
-        mToolList.add(new ToolModel("Brush", R.drawable.ic_brush, ToolType.BRUSH));
-        mToolList.add(new ToolModel("Text", R.drawable.ic_text, ToolType.TEXT));
-        mToolList.add(new ToolModel("Eraser", R.drawable.ic_eraser, ToolType.ERASER));
-        mToolList.add(new ToolModel("Filter", R.drawable.ic_photo_filter, ToolType.FILTER));
-        mToolList.add(new ToolModel("Emoji", R.drawable.ic_insert_emoticon, ToolType.EMOJI));
-        mToolList.add(new ToolModel("Sticker", R.drawable.ic_sticker, ToolType.STICKER));
+        mToolList.add(new ToolModel("Brush", R.drawable.ic_brush));
+        mToolList.add(new ToolModel("Text", R.drawable.ic_text));
+        mToolList.add(new ToolModel("Eraser", R.drawable.ic_eraser));
+        mToolList.add(new ToolModel("Filter", R.drawable.ic_photo_filter));
+        mToolList.add(new ToolModel("Emoji", R.drawable.ic_insert_emoticon));
+        mToolList.add(new ToolModel("Sticker", R.drawable.ic_sticker));
     }
 
     public interface OnItemSelected {
-        void onToolSelected(ToolType toolType);
+        void onToolSelected(int toolType);
     }
 
     class ToolModel {
         private String mToolName;
+        private String imageURL;
         private int mToolIcon;
-        private ToolType mToolType;
 
-        ToolModel(String toolName, int toolIcon, ToolType toolType) {
+        ToolModel(String toolName, int toolIcon) {
             mToolName = toolName;
             mToolIcon = toolIcon;
-            mToolType = toolType;
+        }
+
+        ToolModel(String toolName, String imageURL) {
+            mToolName = toolName;
+            this.imageURL = imageURL;
         }
 
     }
@@ -63,7 +69,9 @@ public class EditingToolsAdapter extends RecyclerView.Adapter<EditingToolsAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ToolModel item = mToolList.get(position);
         holder.txtTool.setText(item.mToolName);
-        holder.imgToolIcon.setImageResource(item.mToolIcon);
+        if (item.imageURL != null)
+            Picasso.get().load(item.imageURL).into(holder.imgToolIcon);
+        else holder.imgToolIcon.setImageResource(item.mToolIcon);
     }
 
     @Override
@@ -79,12 +87,12 @@ public class EditingToolsAdapter extends RecyclerView.Adapter<EditingToolsAdapte
             super(itemView);
             imgToolIcon = itemView.findViewById(R.id.imgToolIcon);
             txtTool = itemView.findViewById(R.id.txtTool);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mOnItemSelected.onToolSelected(mToolList.get(getLayoutPosition()).mToolType);
-                }
-            });
+            itemView.setOnClickListener(v -> mOnItemSelected.onToolSelected(getLayoutPosition()));
         }
+    }
+
+    public void addStickerPack(StickerPack pack) {
+        mToolList.add(new ToolModel(pack.title, pack.icon));
+        notifyItemChanged(getItemCount() - 1);
     }
 }

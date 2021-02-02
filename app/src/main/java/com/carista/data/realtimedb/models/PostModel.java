@@ -68,8 +68,8 @@ public class PostModel {
         this.timestamp = (long) _data.get("timestamp");
         this.userId = (String) _data.get("userId");
         if (_data.get("likes") != null) {
-            this.likes = ((ArrayList<String>) _data.get("likes")).size();
-            for (Object like : ((ArrayList<String>) _data.get("likes"))) {
+            this.likes = ((ArrayList) _data.get("likes")).size();
+            for (Object like : ((ArrayList) _data.get("likes"))) {
                 if (like.toString().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                     this.likedByUser = true;
                     break;

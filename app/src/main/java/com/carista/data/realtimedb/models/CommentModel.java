@@ -21,6 +21,6 @@ public class CommentModel {
     public CommentModel(Object data) {
         HashMap<String, String> _data = (HashMap<String, String>) data;
         this.comment = _data.get("comment");
-        this.user = _data.get("user");
+        this.user = _data.get("userId");
     }
 }

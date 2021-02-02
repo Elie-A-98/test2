@@ -32,12 +32,14 @@ import androidx.transition.TransitionManager;
 
 import com.carista.MainActivity;
 import com.carista.R;
+import com.carista.data.StickerPack;
 import com.carista.photoeditor.photoeditor.base.BaseActivity;
 import com.carista.photoeditor.photoeditor.filters.FilterListener;
 import com.carista.photoeditor.photoeditor.filters.FilterViewAdapter;
 import com.carista.photoeditor.photoeditor.tools.EditingToolsAdapter;
 import com.carista.photoeditor.photoeditor.tools.ToolType;
 import com.carista.utils.Data;
+import com.carista.utils.FirestoreData;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,7 +50,9 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import ja.burhanrashid52.photoeditor.CustomEffect;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
@@ -65,7 +69,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         View.OnClickListener,
         PropertiesBSFragment.Properties,
         EmojiBSFragment.EmojiListener,
-        StickerBSFragment.StickerListener, EditingToolsAdapter.OnItemSelected, FilterListener {
+        StickerBSFragment.StickerListener, EditingToolsAdapter.OnItemSelected, FilterListener,
+        OnStickersPackLoad {
 
     private static final String TAG = EditImageActivity.class.getSimpleName();
     public static final String FILE_PROVIDER_AUTHORITY = "com.burhanrashid52.photoeditor.fileprovider";
@@ -76,6 +81,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private PropertiesBSFragment mPropertiesBSFragment;
     private EmojiBSFragment mEmojiBSFragment;
     private StickerBSFragment mStickerBSFragment;
+    private ArrayList<CustomStickerBSFragment> customStickersFragments;
     private TextView mTxtCurrentTool;
     private RecyclerView mRvTools, mRvFilters;
     private final EditingToolsAdapter mEditingToolsAdapter = new EditingToolsAdapter(this);
@@ -124,6 +130,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         //Set Image Dynamically
         // mPhotoEditorView.getSource().setImageResource(R.drawable.color_palette);
+
+        FirestoreData.getStickersPacks(this);
     }
 
     private void handleIntentImage(ImageView source) {
@@ -482,28 +490,20 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         }
     }
 
-    private void showSaveDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(getString(R.string.msg_save_image));
-        builder.setPositiveButton("Save", (dialog, which) -> saveImage());
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-        builder.setNeutralButton("Discard", (dialog, which) -> {
-            if (getIntent().getAction() != null)
-                startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
-        builder.create().show();
-
-    }
-
     @Override
     public void onFilterSelected(PhotoFilter photoFilter) {
         mPhotoEditor.setFilterEffect(photoFilter);
     }
 
     @Override
-    public void onToolSelected(ToolType toolType) {
-        switch (toolType) {
+    public void onToolSelected(int toolType) {
+        if (toolType > ToolType.values().length - 1) {
+            int index = toolType - 6;
+            showBottomSheetDialogFragment(this.customStickersFragments.get(index));
+            return;
+        }
+
+        switch (ToolType.values()[toolType]) {
             case BRUSH:
                 mPhotoEditor.setBrushDrawingMode(true);
                 mTxtCurrentTool.setText(R.string.label_brush);
@@ -511,15 +511,12 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
             case TEXT:
                 TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(this);
-                textEditorDialogFragment.setOnTextEditorListener(new TextEditorDialogFragment.TextEditor() {
-                    @Override
-                    public void onDone(String inputText, int colorCode) {
-                        final TextStyleBuilder styleBuilder = new TextStyleBuilder();
-                        styleBuilder.withTextColor(colorCode);
+                textEditorDialogFragment.setOnTextEditorListener((inputText, colorCode) -> {
+                    final TextStyleBuilder styleBuilder = new TextStyleBuilder();
+                    styleBuilder.withTextColor(colorCode);
 
-                        mPhotoEditor.addText(inputText, styleBuilder);
-                        mTxtCurrentTool.setText(R.string.label_text);
-                    }
+                    mPhotoEditor.addText(inputText, styleBuilder);
+                    mTxtCurrentTool.setText(R.string.label_text);
                 });
                 break;
             case ERASER:
@@ -545,7 +542,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         }
         fragment.show(getSupportFragmentManager(), fragment.getTag());
     }
-
 
     void showFilter(boolean isVisible) {
         mIsFilterVisible = isVisible;
@@ -588,11 +584,22 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         if (mIsFilterVisible) {
             showFilter(false);
             mTxtCurrentTool.setText(R.string.app_name);
-        } else if (mPhotoEditor.getBrushDrawableMode()==true) {
+        } else if (mPhotoEditor.getBrushDrawableMode()) {
             mPhotoEditor.setBrushDrawingMode(false);
-            mTxtCurrentTool.setText("Carista");
+            mTxtCurrentTool.setText(R.string.app_name);
         } else {
             preventClosingEditor();
+        }
+    }
+
+    @Override
+    public void onStickersPacksFetching(List<StickerPack> packs) {
+        this.customStickersFragments = new ArrayList<>();
+        for (StickerPack pack : packs) {
+            CustomStickerBSFragment customStickerBSFragment = new CustomStickerBSFragment(pack);
+            customStickerBSFragment.setStickerListener(this::onStickerClick);
+            this.customStickersFragments.add(customStickerBSFragment);
+            mEditingToolsAdapter.addStickerPack(pack);
         }
     }
 }

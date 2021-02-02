@@ -22,24 +22,24 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.carista.R;
 import com.carista.data.realtimedb.models.CommentModel;
 import com.carista.utils.Data;
+import com.carista.utils.FirestoreData;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
-import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -101,29 +101,20 @@ public class UserFragment extends Fragment {
         UserInfo userInfo = FirebaseAuth.getInstance().getCurrentUser().getProviderData().get(0);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference posts = db.collection("users").document(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        posts.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("users").whereEqualTo("id",FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for(DocumentSnapshot documentSnapshot: value.getDocuments()){
+                    String avatar= String.valueOf(documentSnapshot.get("avatar"));
+                    String nickname = String.valueOf(documentSnapshot.get("nickname"));
+
+                    userNickname.setText("Welcome, " + nickname);
+
+                    if(!avatar.isEmpty())
+                        Picasso.get().load(avatar).into(userAvatar);
+
                 }
-                Object avatar = snapshot.get("avatar");
-                Object nickname = snapshot.get("nickname");
-
-                if (nickname==null)
-                    if (userInfo.getProviderId().equals("phone")) {
-                        userNickname.setText("Welcome, " + user.getPhoneNumber());
-                    } else {
-                        userNickname.setText("Welcome, " + user.getEmail());
-                    }
-                else
-                    userNickname.setText("Welcome, " + nickname.toString());
-
-                if (avatar != null)
-                    Picasso.get().load(avatar.toString()).into(userAvatar);
             }
         });
 
@@ -145,8 +136,9 @@ public class UserFragment extends Fragment {
             if (newNickname == null || newNickname.isEmpty())
                 return;
             usernameEdit.setText("");
-            Data.uploadNickname(newNickname);
+            FirestoreData.uploadNickname(newNickname);
             Snackbar.make(getActivity().getCurrentFocus(), "Username changed!", Snackbar.LENGTH_SHORT).show();
+            userNickname.setText("Welcome, " + newNickname);
             usernameEdit.setVisibility(View.GONE);
             usernameChangeButton.setVisibility(View.GONE);
         });
@@ -191,7 +183,7 @@ public class UserFragment extends Fragment {
             UploadTask uploadTask = imageRef.putBytes(imdata);
             uploadTask.addOnFailureListener(exception -> Snackbar.make(getActivity().getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
                     .addOnSuccessListener(taskSnapshot -> {
-                        taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> Data.uploadAvatarLink(uri.toString()));
+                        taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> FirestoreData.uploadAvatarLink(uri.toString()));
                     });
         }
     }

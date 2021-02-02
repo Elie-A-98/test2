@@ -11,14 +11,20 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SplashScreen extends AppCompatActivity {
     public static final int RC_SIGN_IN = 100;
-    private static final int SPLASH_TIME_OUT = 3000;
-
+    private static final int SPLASH_TIME_OUT = 1000;
+    private SplashScreen me=this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +62,26 @@ public class SplashScreen extends AppCompatActivity {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK) {
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
+                FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+                firestore.collection("users").whereEqualTo("id",FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if(value.isEmpty()){
+                            Map<String, Object> user = new HashMap<>();
+                            user.put("id",FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            user.put("nickname", "Anonymous");
+                            user.put("avatar","");
+                            firestore.collection("users").add(user);
+                            startActivity(new Intent(me, MainActivity.class));
+                            finish();
+                        }
+                        else{
+                            startActivity(new Intent(me, MainActivity.class));
+                            finish();
+                        }
+                    }
+                });
+
             } else {
                 Snackbar.make(getCurrentFocus(), getString(R.string.login_error) + "\n Error code: " + response.getError().getErrorCode(), Snackbar.LENGTH_SHORT).show();
             }
