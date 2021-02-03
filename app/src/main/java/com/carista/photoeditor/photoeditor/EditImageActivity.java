@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ja.burhanrashid52.photoeditor.CustomEffect;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
@@ -257,29 +258,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
             case R.id.imgPOST:
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                LayoutInflater layoutinflater = getLayoutInflater();
-                View Dview = layoutinflater.inflate(R.layout.edittext_with_button, null);
-                builder.setCancelable(false);
-                builder.setView(Dview);
-                edittext = (EditText) Dview.findViewById(R.id.post_title);
-                Button Upload = (Button) Dview.findViewById(R.id.post_upload);
-                Button Cancel = (Button) Dview.findViewById(R.id.post_cancel);
-                AlertDialog alertdialog = builder.create();
-
-                Cancel.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        alertdialog.cancel();
-                    }
-                });
-                Upload.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        uploadPost();
-                    }
-                });
-                alertdialog.show();
+                uploadPost();
                 break;
         }
     }
@@ -378,11 +357,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
                         img = mPhotoEditorView.getSource();
 
-                        if (edittext.getText() == null || edittext.getText().toString().isEmpty()) {
-                            Snackbar.make(getCurrentFocus(), R.string.insert_title, Snackbar.LENGTH_SHORT).show();
-                            return;
-                        }
-
                         FirebaseStorage storage = FirebaseStorage.getInstance();
                         // Create a storage reference from our app
                         StorageReference storageRef = storage.getReference("posts");
@@ -398,15 +372,12 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                         byte[] data = baos.toByteArray();
 
-                        showLoading("Upload...");
                         UploadTask uploadTask = imageRef.putBytes(data);
                         uploadTask.addOnFailureListener(exception -> Snackbar.make(getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
                                 .addOnSuccessListener(taskSnapshot -> {
                                     taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
-                                        Data.uploadPost(edittext.getText().toString().trim(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                        //mPhotoEditorView.getSource().setImageBitmap(null);
-                                        edittext.setText("");
-                                        Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
+                                        FirestoreData.uploadPost("", id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                        Snackbar.make(findViewById(R.id.rootView),R.string.success_upload,Snackbar.LENGTH_SHORT).show();
                                         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                         startActivity(intent);
                                     });

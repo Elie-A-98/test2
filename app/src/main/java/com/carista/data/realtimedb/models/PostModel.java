@@ -6,8 +6,8 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.Exclude;
-import com.google.firebase.database.PropertyName;
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.PropertyName;
 import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
@@ -76,6 +76,5 @@ public class PostModel {
                 }
             }
         }
-
     }
 }

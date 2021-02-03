@@ -1,6 +1,7 @@
 package com.carista.data.realtimedb.models;
 
-import com.google.firebase.database.PropertyName;
+
+import com.google.firebase.firestore.PropertyName;
 
 public class UserModel {
     @PropertyName("nickname")

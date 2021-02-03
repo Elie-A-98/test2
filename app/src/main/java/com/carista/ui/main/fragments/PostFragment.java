@@ -82,7 +82,7 @@ public class PostFragment extends Fragment {
                         PostModel postModel = new PostModel(id, documentSnapshot.getData());
                         adapter.addPost(postModel);
                         lastLazyItem = documentSnapshot;
-                        AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
+                        //AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                     }
                 }
             }
@@ -110,7 +110,7 @@ public class PostFragment extends Fragment {
                                     PostModel postModel = new PostModel(id, documentSnapshot.getData());
                                     adapter.addPost(postModel);
                                     lastLazyItem = documentSnapshot;
-                                    AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
+                                    //AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                                 }
                             }
                         });
@@ -146,7 +146,7 @@ public class PostFragment extends Fragment {
                         PostModel postModel = new PostModel(id, documentSnapshot.getData());
                         adapter.addPost(postModel);
                         lastLazyItem = documentSnapshot;
-                        AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
+                        //AppDatabase.executeQuery(() -> AppDatabase.getInstance().postDao().insertAll(postModel));
                     }
                     swipeRefreshLayout.setRefreshing(false);
                 }
