@@ -63,15 +63,12 @@ public class UserPostsFragment extends Fragment {
         if (!isUserLikesOnly) {
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             Query q = firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING);
-            q.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                    adapter.clearData();
-                    for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
-                        if (documentSnapshot.get("userId").equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                            String id = String.valueOf(documentSnapshot.get("id"));
-                            adapter.addPost(new PostModel(id, documentSnapshot.getData()));
-                        }
+            q.addSnapshotListener((value, error) -> {
+                adapter.clearData();
+                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                    if (documentSnapshot.get("userId").equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                        String id = String.valueOf(documentSnapshot.get("id"));
+                        adapter.addPost(new PostModel(id, documentSnapshot.getData()));
                     }
                 }
             });
