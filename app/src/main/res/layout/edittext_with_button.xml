@@ -12,9 +12,11 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        >
 
         <LinearLayout
+            android:background="@drawable/upload_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -22,10 +24,9 @@
 
             <EditText
                 android:id="@+id/post_title"
-                android:hint="Type Title Here"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-            />
+                android:hint="Type Title Here" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -36,19 +37,19 @@
                     android:id="@+id/post_upload"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:backgroundTint="@color/purple_500"
                     android:layout_gravity="center"
+                    android:text="@string/upload"
                     android:textColor="@color/white"
-                    android:text="@string/upload" />
+                    app:backgroundTint="@color/purple_500" />
 
                 <Button
                     android:id="@+id/post_cancel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:backgroundTint="@color/purple_500"
                     android:layout_gravity="center"
+                    android:text="Cancel"
                     android:textColor="@color/white"
-                    android:text="Cancel" />
+                    app:backgroundTint="@color/purple_500" />
             </LinearLayout>
 
         </LinearLayout>

@@ -258,7 +258,19 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
             case R.id.imgPOST:
 
-                uploadPost();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                LayoutInflater layoutinflater = getLayoutInflater();
+                View Dview = layoutinflater.inflate(R.layout.edittext_with_button, null);
+                builder.setCancelable(false);
+                builder.setView(Dview);
+                edittext = (EditText) Dview.findViewById(R.id.post_title);
+                Button Upload = (Button) Dview.findViewById(R.id.post_upload);
+                Button Cancel = (Button) Dview.findViewById(R.id.post_cancel);
+                AlertDialog alertdialog = builder.create();
+
+                Cancel.setOnClickListener(v -> alertdialog.cancel());
+                Upload.setOnClickListener(v -> uploadPost());
+                alertdialog.show();
                 break;
         }
     }
@@ -330,6 +342,14 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private void uploadPost() {
 
         if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+            if (edittext.getText() == null || edittext.getText().toString().isEmpty()) {
+                Snackbar.make(findViewById(R.id.rootView), R.string.insert_title, Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+
+            showLoading(getString(R.string.uploading));
+
             File direct = new File(Environment.getExternalStorageDirectory() + "/Carista");
             if (!direct.exists()) {
                 File wallpaperDirectory = new File("/sdcard/Carista/");
@@ -351,12 +371,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
                     @Override
                     public void onSuccess(@NonNull String imagePath) {
-                        hideLoading();
                         showSnackbar("Image Saved Successfully");
                         mSaveImageUri = Uri.fromFile(new File(imagePath));
                         mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
                         img = mPhotoEditorView.getSource();
-
                         FirebaseStorage storage = FirebaseStorage.getInstance();
                         // Create a storage reference from our app
                         StorageReference storageRef = storage.getReference("posts");
@@ -371,7 +389,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                         byte[] data = baos.toByteArray();
-
                         UploadTask uploadTask = imageRef.putBytes(data);
                         uploadTask.addOnFailureListener(exception -> Snackbar.make(getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
                                 .addOnSuccessListener(taskSnapshot -> {
@@ -379,6 +396,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                                         FirestoreData.uploadPost("", id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
                                         Snackbar.make(findViewById(R.id.rootView),R.string.success_upload,Snackbar.LENGTH_SHORT).show();
                                         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                        hideLoading();
                                         startActivity(intent);
                                     });
                                 });
@@ -392,8 +410,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 });
             } catch (IOException e) {
                 e.printStackTrace();
-                hideLoading();
                 showSnackbar(e.getMessage());
+                hideLoading();
             }
         }
     }

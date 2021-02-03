@@ -75,4 +75,5 @@
     <string name="post_link">https://carista.web.app/post/</string>
     <string name="copied_to_clipboard">Copied link to clipboard!</string>
     <string name="share_post_root_url">https://carista.web.app/post/</string>
+    <string name="uploading">Upload...</string>
 </resources>
