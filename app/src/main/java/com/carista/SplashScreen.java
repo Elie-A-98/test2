@@ -24,7 +24,8 @@ import java.util.Map;
 public class SplashScreen extends AppCompatActivity {
     public static final int RC_SIGN_IN = 100;
     private static final int SPLASH_TIME_OUT = 1000;
-    private SplashScreen me=this;
+    private SplashScreen me = this;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +50,7 @@ public class SplashScreen extends AppCompatActivity {
                         AuthUI.getInstance()
                                 .createSignInIntentBuilder()
                                 .setAvailableProviders(providers)
+                                .setTheme(R.style.auth_theme)
                                 .build(),
                         RC_SIGN_IN);
             }
@@ -63,19 +65,18 @@ public class SplashScreen extends AppCompatActivity {
 
             if (resultCode == RESULT_OK) {
                 FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-                firestore.collection("users").whereEqualTo("id",FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                firestore.collection("users").whereEqualTo("id", FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                        if(value.isEmpty()){
+                        if (value.isEmpty()) {
                             Map<String, Object> user = new HashMap<>();
-                            user.put("id",FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            user.put("id", FirebaseAuth.getInstance().getCurrentUser().getUid());
                             user.put("nickname", "Anonymous");
-                            user.put("avatar","");
+                            user.put("avatar", "");
                             firestore.collection("users").add(user);
                             startActivity(new Intent(me, MainActivity.class));
                             finish();
-                        }
-                        else{
+                        } else {
                             startActivity(new Intent(me, MainActivity.class));
                             finish();
                         }
@@ -83,7 +84,9 @@ public class SplashScreen extends AppCompatActivity {
                 });
 
             } else {
-                Snackbar.make(getCurrentFocus(), getString(R.string.login_error) + "\n Error code: " + response.getError().getErrorCode(), Snackbar.LENGTH_SHORT).show();
+                if (response != null && response.getError() != null)
+                    Snackbar.make(findViewById(R.id.rootView), getString(R.string.login_error) + "\n Error code: " + response.getError().getErrorCode(), Snackbar.LENGTH_SHORT).show();
+                finish();
             }
         }
     }

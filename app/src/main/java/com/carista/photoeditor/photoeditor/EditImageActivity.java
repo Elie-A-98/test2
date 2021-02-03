@@ -38,7 +38,6 @@ import com.carista.photoeditor.photoeditor.filters.FilterListener;
 import com.carista.photoeditor.photoeditor.filters.FilterViewAdapter;
 import com.carista.photoeditor.photoeditor.tools.EditingToolsAdapter;
 import com.carista.photoeditor.photoeditor.tools.ToolType;
-import com.carista.utils.Data;
 import com.carista.utils.FirestoreData;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
@@ -54,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ja.burhanrashid52.photoeditor.CustomEffect;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
@@ -394,7 +392,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                                 .addOnSuccessListener(taskSnapshot -> {
                                     taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
                                         FirestoreData.uploadPost("", id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                        Snackbar.make(findViewById(R.id.rootView),R.string.success_upload,Snackbar.LENGTH_SHORT).show();
+                                        Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
                                         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                         hideLoading();
                                         startActivity(intent);
