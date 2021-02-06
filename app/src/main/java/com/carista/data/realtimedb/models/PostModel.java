@@ -1,9 +1,6 @@
 package com.carista.data.realtimedb.models;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Exclude;
@@ -14,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-@Entity
 public class PostModel {
 
     @NonNull
@@ -38,7 +34,6 @@ public class PostModel {
     public String userId;
 
     @Exclude
-    @ColumnInfo(name = "likes")
     public int likes;
 
     @Exclude
