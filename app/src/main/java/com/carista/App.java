@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.carista.api.RetrofitManager;
-import com.carista.data.db.AppDatabase;
 
 public class App extends Application {
 
@@ -16,7 +15,6 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        AppDatabase.initialize(getApplicationContext());
 
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(PREF_DARK_THEME, Context.MODE_PRIVATE);
 

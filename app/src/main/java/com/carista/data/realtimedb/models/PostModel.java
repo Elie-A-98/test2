@@ -16,28 +16,24 @@ import java.util.HashMap;
 
 @Entity
 public class PostModel {
-    @PrimaryKey
+
     @NonNull
     @Expose
     public String id;
 
     @Expose
-    @ColumnInfo(name = "title")
     @PropertyName("title")
     public String title;
 
     @Expose
-    @ColumnInfo(name = "image")
     @PropertyName("image")
     public String image;
 
     @Expose
-    @ColumnInfo(name = "timestamp")
     @PropertyName("timestamp")
     public long timestamp;
 
     @Expose
-    @ColumnInfo(name = "userId")
     @PropertyName("userId")
     public String userId;
 
@@ -46,11 +42,9 @@ public class PostModel {
     public int likes;
 
     @Exclude
-    @ColumnInfo(name = "username")
     public String username;
 
     @Exclude
-    @ColumnInfo(name = "likedByUser")
     public boolean likedByUser;
 
     public PostModel(String title, String image, String userId) {
