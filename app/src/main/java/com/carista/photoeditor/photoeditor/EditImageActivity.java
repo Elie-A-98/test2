@@ -3,9 +3,11 @@ package com.carista.photoeditor.photoeditor;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -24,6 +26,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -291,48 +294,56 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 new File(uri.getPath()));
     }
 
-    @SuppressLint("MissingPermission")
     private void saveImage() {
-        if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...");
-            File direct = new File(Environment.getExternalStorageDirectory() + "/Carista");
-            if (!direct.exists()) {
-                File wallpaperDirectory = new File("/sdcard/Carista/");
-                wallpaperDirectory.mkdirs();
-            }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
 
-            File file = new File("/sdcard/Carista/", System.currentTimeMillis() + ".png");
-            if (file.exists()) {
-                file.delete();
-            }
-            try {
-                file.createNewFile();
+        showLoading("Saving...");
+        String directory;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
+        } else {
+            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
+        }
+        File direct = new File(directory);
+        if (!direct.exists()) {
+            direct.mkdirs();
+        }
 
-                SaveSettings saveSettings = new SaveSettings.Builder()
-                        .setClearViewsEnabled(true)
-                        .setTransparencyEnabled(true)
-                        .build();
+        File file = new File(directory, System.currentTimeMillis() + ".png");
+        if (file.exists()) {
+            file.delete();
+        }
 
-                mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
-                    @Override
-                    public void onSuccess(@NonNull String imagePath) {
-                        hideLoading();
-                        showSnackbar("Image Saved Successfully");
-                        mSaveImageUri = Uri.fromFile(new File(imagePath));
-                        mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
-                    }
+        try {
+            file.createNewFile();
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        hideLoading();
-                        showSnackbar("Failed to save Image");
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-                hideLoading();
-                showSnackbar(e.getMessage());
-            }
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build();
+
+            mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                @Override
+                public void onSuccess(@NonNull String imagePath) {
+                    hideLoading();
+                    showSnackbar("Image Saved Successfully");
+                    mSaveImageUri = Uri.fromFile(new File(imagePath));
+                    mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
+                }
+
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    hideLoading();
+                    showSnackbar("Failed to save Image");
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            hideLoading();
+            showSnackbar(e.getMessage());
         }
     }
 
