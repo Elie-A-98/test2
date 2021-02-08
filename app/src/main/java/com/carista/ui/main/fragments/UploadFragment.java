@@ -6,11 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +13,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import com.carista.R;
-import com.carista.utils.Data;
+import com.carista.utils.Device;
 import com.carista.utils.FirestoreData;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,7 +32,7 @@ import java.util.Date;
 
 public class UploadFragment extends Fragment {
 
-    private static final int RESULT_LOAD_IMAGE = 100;
+    public static final int RESULT_LOAD_IMAGE = 100;
     private Intent chooser;
     private ImageView imageView;
     private Button chooseButton, uploadButton;
@@ -64,7 +63,7 @@ public class UploadFragment extends Fragment {
         uploadButton = view.findViewById(R.id.new_post_upload);
         titleEditText = view.findViewById(R.id.new_post_title);
         imageView = view.findViewById(R.id.new_post_image);
-        initChooser();
+        chooser = Device.initChooser(getContext());
 
         chooseButton.setOnClickListener(view1 -> {
             startActivityForResult(chooser, RESULT_LOAD_IMAGE);
@@ -104,18 +103,10 @@ public class UploadFragment extends Fragment {
                             FirestoreData.uploadPost(titleEditText.getText().toString().trim(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
                             imageView.setImageBitmap(null);
                             titleEditText.setText("");
-                            Snackbar.make(getView().findViewById(R.id.upload_layout),R.string.success_upload,Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(getView().findViewById(R.id.upload_layout), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
                         });
                     });
         });
-    }
-
-    private void initChooser() {
-        Intent camIntent = new Intent("android.media.action.IMAGE_CAPTURE");
-        Intent gallIntent = new Intent(Intent.ACTION_PICK);
-        gallIntent.setType("image/*");
-        chooser = Intent.createChooser(gallIntent, getResources().getString(R.string.select_image));
-        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{camIntent});
     }
 
     @Override

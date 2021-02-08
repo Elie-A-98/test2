@@ -3,13 +3,16 @@ package com.carista.photoeditor.photoeditor;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +43,8 @@ import com.carista.photoeditor.photoeditor.filters.FilterListener;
 import com.carista.photoeditor.photoeditor.filters.FilterViewAdapter;
 import com.carista.photoeditor.photoeditor.tools.EditingToolsAdapter;
 import com.carista.photoeditor.photoeditor.tools.ToolType;
+import com.carista.ui.main.fragments.UploadFragment;
+import com.carista.utils.Device;
 import com.carista.utils.FirestoreData;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
@@ -91,6 +96,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private boolean mIsFilterVisible;
     private EditText edittext;
     private ImageView img;
+    private Intent chooser;
 
     @Nullable
     @VisibleForTesting
@@ -441,12 +447,27 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 case PICK_REQUEST:
                     try {
                         mPhotoEditor.clearAllViews();
-                        Uri uri = data.getData();
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        Bitmap bitmap = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(data.getData()));
                         mPhotoEditorView.getSource().setImageBitmap(bitmap);
                     } catch (IOException e) {
+                        Snackbar.make(this.getCurrentFocus(), R.string.error_getting_image, Snackbar.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
+                    break;
+                case UploadFragment.RESULT_LOAD_IMAGE:
+                    Bitmap bitmap;
+                    if (data.getExtras() != null && data.getExtras().get("data") instanceof Bitmap) {
+                        bitmap = (Bitmap) data.getExtras().get("data");
+                    } else {
+                        try {
+                            bitmap = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(data.getData()));
+                        } catch (Exception e) {
+                            Snackbar.make(this.getCurrentFocus(), R.string.error_getting_image, Snackbar.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+
+                    onStickerClick(bitmap);
                     break;
             }
         }
@@ -498,7 +519,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     @Override
     public void onToolSelected(int toolType) {
         if (toolType > ToolType.values().length - 1) {
-            int index = toolType - 6;
+            int index = toolType - ToolType.values().length;
             showBottomSheetDialogFragment(this.customStickersFragments.get(index));
             return;
         }
@@ -533,7 +554,15 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             case STICKER:
                 showBottomSheetDialogFragment(mStickerBSFragment);
                 break;
+            case IMPORT:
+                importImage();
+                break;
         }
+    }
+
+    private void importImage() {
+        Intent chooser = Device.initChooser(this);
+        startActivityForResult(chooser, UploadFragment.RESULT_LOAD_IMAGE);
     }
 
     private void showBottomSheetDialogFragment(BottomSheetDialogFragment fragment) {

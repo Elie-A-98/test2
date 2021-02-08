@@ -18,7 +18,7 @@
             android:layout_marginLeft="16dp"
             android:layout_marginTop="15dp"
             android:layout_marginRight="16dp"
-            android:paddingBottom="?attr/actionBarSize"
+            android:paddingBottom="15dp"
             app:layoutManager="LinearLayoutManager"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
