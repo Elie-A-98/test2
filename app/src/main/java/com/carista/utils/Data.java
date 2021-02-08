@@ -8,7 +8,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.carista.data.db.AppDatabase;
 import com.carista.data.realtimedb.models.CommentModel;
 import com.carista.data.realtimedb.models.PostModel;
 import com.google.android.gms.tasks.OnFailureListener;

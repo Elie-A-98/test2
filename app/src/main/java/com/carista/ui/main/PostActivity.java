@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import com.carista.R;
 import com.carista.SplashScreen;
@@ -31,8 +32,9 @@ public class PostActivity extends AppCompatActivity {
 
     private ImageView postImage;
     private CheckBox likeCheckbox, commentCheckbox;
-    private TextView likesCounterText, titleText;
+    private TextView likesCounterText, titleText, usernameText;
     private CardView cardView;
+    private CircleImageView userIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,8 @@ public class PostActivity extends AppCompatActivity {
         likesCounterText = findViewById(R.id.view_likes_counter);
         titleText = findViewById(R.id.view_post_title);
         cardView = findViewById(R.id.view_post_card);
+        userIcon = findViewById(R.id.post_user_post_icon);
+        usernameText = findViewById(R.id.post_top_post_username);
 
         String postId = null;
 
@@ -79,6 +83,7 @@ public class PostActivity extends AppCompatActivity {
                     String userId= (String) documentSnapshot.get("userId");
                     String title= (String) documentSnapshot.get("title");
                     FirestoreData.setPostNicknameTitle(userId, title, titleText);
+                    FirestoreData.setPostUserIconUsername(userId, userIcon, usernameText);
                 }
             }
         });

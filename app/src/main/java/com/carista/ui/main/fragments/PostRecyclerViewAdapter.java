@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
@@ -66,12 +67,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         return new ViewHolder(view);
     }
 
-//    @Override
-//    public void onClick(View v) {
-//        if(v.equals(imgViewRemoveIcon)) {
-//            removePost(getAdapterPosition());
-//        }
-//    }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
@@ -80,7 +75,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         FirestoreData.setPostNicknameTitle(this.items.get(position).userId, this.items.get(position).title, holder.mTitleView);
         FirestoreData.getLikesCount(this.items.get(position).id, holder.mLikeCounterView);
         FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
-
+        FirestoreData.setPostUserIconUsername(this.items.get(position).userId, holder.mCircleUserImage, holder.mNicknameView);
 
         holder.mimgViewRemoveIcon.setOnClickListener(v -> {
             int position1 = holder.getAdapterPosition();
@@ -134,10 +129,11 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         public ImageView mimgViewRemoveIcon;
         public final CardView mCardView;
         public PostModel mItem;
-        public TextView mLikeCounterView;
+        public TextView mLikeCounterView, mNicknameView;
         public CheckBox mLikeCheckbox, mCommentCheckbox, mShareCheckbox;
         public EditText mShareLink;
         public LinearLayout mShareLayout;
+        public CircleImageView mCircleUserImage;
 
         public ViewHolder(View view) {
             super(view);
@@ -152,6 +148,8 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             mShareCheckbox = view.findViewById(R.id.share_checkbox);
             mShareLink = view.findViewById(R.id.share_link);
             mShareLayout = view.findViewById(R.id.share_layout);
+            mNicknameView = view.findViewById(R.id.top_post_username);
+            mCircleUserImage = view.findViewById(R.id.user_post_icon);
             this.setIsRecyclable(false);
         }
     }
