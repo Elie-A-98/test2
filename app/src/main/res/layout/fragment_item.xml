@@ -10,7 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="5dp"
+        android:layout_margin="10dp"
         app:cardElevation="10dp"
+        app:cardCornerRadius="20dp"
         android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -68,15 +70,22 @@
 
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/post_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Title"
+                android:layout_marginLeft="20dp" />
+
             <ImageView
                 android:id="@+id/post_image"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
                 android:layout_margin="@dimen/text_margin"
                 android:src="@drawable/abc_vector_test"
                 android:textAppearance="?attr/textAppearanceListItem"/>
-
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -120,21 +129,16 @@
                         android:background="@drawable/ic_share"
                         android:layout_margin="7dp"/>
 
+                    <TextView
+                        android:id="@+id/likes_counter"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="10dp"
+                        android:textStyle="bold"
+                        android:gravity="end" />
+
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/likes_counter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:id="@+id/post_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Title"
-                    android:layout_marginLeft="5dp" />
 
                 <LinearLayout
                     android:id="@+id/share_layout"

@@ -12,5 +12,6 @@ public enum ToolType {
     FILTER,
     EMOJI,
     STICKER,
-    IMPORT
+    IMPORT,
+    CROP
 }
