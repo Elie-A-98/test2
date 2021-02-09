@@ -1,14 +1,18 @@
 package com.carista.photoeditor.photoeditor;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +28,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +43,8 @@ import com.carista.photoeditor.photoeditor.filters.FilterListener;
 import com.carista.photoeditor.photoeditor.filters.FilterViewAdapter;
 import com.carista.photoeditor.photoeditor.tools.EditingToolsAdapter;
 import com.carista.photoeditor.photoeditor.tools.ToolType;
+import com.carista.ui.main.fragments.UploadFragment;
+import com.carista.utils.Device;
 import com.carista.utils.FirestoreData;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
@@ -89,6 +96,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private boolean mIsFilterVisible;
     private EditText edittext;
     private ImageView img;
+    private Intent chooser;
 
     @Nullable
     @VisibleForTesting
@@ -291,126 +299,138 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 new File(uri.getPath()));
     }
 
-    @SuppressLint("MissingPermission")
     private void saveImage() {
-        if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...");
-            File direct = new File(Environment.getExternalStorageDirectory() + "/Carista");
-            if (!direct.exists()) {
-                File wallpaperDirectory = new File("/sdcard/Carista/");
-                wallpaperDirectory.mkdirs();
-            }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
 
-            File file = new File("/sdcard/Carista/", System.currentTimeMillis() + ".png");
-            if (file.exists()) {
-                file.delete();
-            }
-            try {
-                file.createNewFile();
+        showLoading("Saving...");
+        String directory;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
+        } else {
+            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
+        }
+        File direct = new File(directory);
+        if (!direct.exists()) {
+            direct.mkdirs();
+        }
 
-                SaveSettings saveSettings = new SaveSettings.Builder()
-                        .setClearViewsEnabled(true)
-                        .setTransparencyEnabled(true)
-                        .build();
+        File file = new File(directory, System.currentTimeMillis() + ".png");
+        if (file.exists()) {
+            file.delete();
+        }
 
-                mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
-                    @Override
-                    public void onSuccess(@NonNull String imagePath) {
-                        hideLoading();
-                        showSnackbar("Image Saved Successfully");
-                        mSaveImageUri = Uri.fromFile(new File(imagePath));
-                        mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
-                    }
+        try {
+            file.createNewFile();
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        hideLoading();
-                        showSnackbar("Failed to save Image");
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-                hideLoading();
-                showSnackbar(e.getMessage());
-            }
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build();
+
+            mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                @Override
+                public void onSuccess(@NonNull String imagePath) {
+                    hideLoading();
+                    showSnackbar("Image Saved Successfully");
+                    mSaveImageUri = Uri.fromFile(new File(imagePath));
+                    mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
+                }
+
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    hideLoading();
+                    showSnackbar("Failed to save Image");
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            hideLoading();
+            showSnackbar(e.getMessage());
         }
     }
 
-    @SuppressLint("MissingPermission")
     private void uploadPost() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
 
-        if (requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (edittext.getText() == null || edittext.getText().toString().isEmpty()) {
+            Snackbar.make(findViewById(R.id.rootView), R.string.insert_title, Snackbar.LENGTH_SHORT).show();
+            return;
+        }
 
-            if (edittext.getText() == null || edittext.getText().toString().isEmpty()) {
-                Snackbar.make(findViewById(R.id.rootView), R.string.insert_title, Snackbar.LENGTH_SHORT).show();
-                return;
-            }
+        showLoading(getString(R.string.uploading));
 
-            showLoading(getString(R.string.uploading));
+        String directory;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
+        } else {
+            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
+        }
 
-            File direct = new File(Environment.getExternalStorageDirectory() + "/Carista");
-            if (!direct.exists()) {
-                File wallpaperDirectory = new File("/sdcard/Carista/");
-                wallpaperDirectory.mkdirs();
-            }
+        File direct = new File(directory);
+        if (!direct.exists()) {
+            direct.mkdirs();
+        }
 
-            File file = new File("/sdcard/Carista/", System.currentTimeMillis() + ".png");
-            if (file.exists()) {
-                file.delete();
-            }
-            try {
-                file.createNewFile();
+        File file = new File(directory, System.currentTimeMillis() + ".png");
 
-                SaveSettings saveSettings = new SaveSettings.Builder()
-                        .setClearViewsEnabled(true)
-                        .setTransparencyEnabled(true)
-                        .build();
+        try {
+            file.createNewFile();
 
-                mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
-                    @Override
-                    public void onSuccess(@NonNull String imagePath) {
-                        showSnackbar("Image Saved Successfully");
-                        mSaveImageUri = Uri.fromFile(new File(imagePath));
-                        mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
-                        img = mPhotoEditorView.getSource();
-                        FirebaseStorage storage = FirebaseStorage.getInstance();
-                        // Create a storage reference from our app
-                        StorageReference storageRef = storage.getReference("posts");
-                        // Create a reference to "mountains.jpg"
-                        long id = new Date().getTime();
-                        String name = id + ".jpg";
-                        StorageReference imageRef = storageRef.child(name);
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build();
 
-                        img.setDrawingCacheEnabled(true);
-                        img.buildDrawingCache();
-                        Bitmap bitmap = ((BitmapDrawable) img.getDrawable()).getBitmap();
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                        byte[] data = baos.toByteArray();
-                        UploadTask uploadTask = imageRef.putBytes(data);
-                        uploadTask.addOnFailureListener(exception -> Snackbar.make(getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
-                                .addOnSuccessListener(taskSnapshot -> {
-                                    taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
-                                        FirestoreData.uploadPost("", id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                        Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                        hideLoading();
-                                        startActivity(intent);
-                                    });
+            mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                @Override
+                public void onSuccess(@NonNull String imagePath) {
+                    showSnackbar("Image Saved Successfully");
+                    mSaveImageUri = Uri.fromFile(new File(imagePath));
+                    mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
+                    img = mPhotoEditorView.getSource();
+                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                    // Create a storage reference from our app
+                    StorageReference storageRef = storage.getReference("posts");
+                    // Create a reference to "mountains.jpg"
+                    long id = new Date().getTime();
+                    String name = id + ".jpg";
+                    StorageReference imageRef = storageRef.child(name);
+
+                    img.setDrawingCacheEnabled(true);
+                    img.buildDrawingCache();
+                    Bitmap bitmap = ((BitmapDrawable) img.getDrawable()).getBitmap();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] data = baos.toByteArray();
+                    UploadTask uploadTask = imageRef.putBytes(data);
+                    uploadTask.addOnFailureListener(exception -> Snackbar.make(getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
+                            .addOnSuccessListener(taskSnapshot -> {
+                                taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
+                                    FirestoreData.uploadPost(edittext.getText().toString(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                    Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    hideLoading();
+                                    startActivity(intent);
                                 });
-                    }
+                            });
+                }
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        hideLoading();
-                        showSnackbar("Failed to save Image");
-                    }
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-                showSnackbar(e.getMessage());
-                hideLoading();
-            }
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    hideLoading();
+                    showSnackbar("Failed to save Image");
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            showSnackbar(e.getMessage());
+            hideLoading();
         }
     }
 
@@ -427,12 +447,27 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 case PICK_REQUEST:
                     try {
                         mPhotoEditor.clearAllViews();
-                        Uri uri = data.getData();
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        Bitmap bitmap = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(data.getData()));
                         mPhotoEditorView.getSource().setImageBitmap(bitmap);
                     } catch (IOException e) {
+                        Snackbar.make(this.getCurrentFocus(), R.string.error_getting_image, Snackbar.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
+                    break;
+                case UploadFragment.RESULT_LOAD_IMAGE:
+                    Bitmap bitmap;
+                    if (data.getExtras() != null && data.getExtras().get("data") instanceof Bitmap) {
+                        bitmap = (Bitmap) data.getExtras().get("data");
+                    } else {
+                        try {
+                            bitmap = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(data.getData()));
+                        } catch (Exception e) {
+                            Snackbar.make(this.getCurrentFocus(), R.string.error_getting_image, Snackbar.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+
+                    onStickerClick(bitmap);
                     break;
             }
         }
@@ -484,7 +519,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     @Override
     public void onToolSelected(int toolType) {
         if (toolType > ToolType.values().length - 1) {
-            int index = toolType - 6;
+            int index = toolType - ToolType.values().length;
             showBottomSheetDialogFragment(this.customStickersFragments.get(index));
             return;
         }
@@ -519,7 +554,15 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             case STICKER:
                 showBottomSheetDialogFragment(mStickerBSFragment);
                 break;
+            case IMPORT:
+                importImage();
+                break;
         }
+    }
+
+    private void importImage() {
+        Intent chooser = Device.initChooser(this);
+        startActivityForResult(chooser, UploadFragment.RESULT_LOAD_IMAGE);
     }
 
     private void showBottomSheetDialogFragment(BottomSheetDialogFragment fragment) {

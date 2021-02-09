@@ -1,9 +1,6 @@
 package com.carista.data.realtimedb.models;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Exclude;
@@ -14,43 +11,35 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-@Entity
 public class PostModel {
-    @PrimaryKey
+
     @NonNull
     @Expose
     public String id;
 
     @Expose
-    @ColumnInfo(name = "title")
     @PropertyName("title")
     public String title;
 
     @Expose
-    @ColumnInfo(name = "image")
     @PropertyName("image")
     public String image;
 
     @Expose
-    @ColumnInfo(name = "timestamp")
     @PropertyName("timestamp")
     public long timestamp;
 
     @Expose
-    @ColumnInfo(name = "userId")
     @PropertyName("userId")
     public String userId;
 
     @Exclude
-    @ColumnInfo(name = "likes")
     public int likes;
 
     @Exclude
-    @ColumnInfo(name = "username")
     public String username;
 
     @Exclude
-    @ColumnInfo(name = "likedByUser")
     public boolean likedByUser;
 
     public PostModel(String title, String image, String userId) {
