@@ -593,12 +593,51 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     }
 
     private void CropImage(){
-        ImageView img=mPhotoEditorView.getSource();
-        img.setDrawingCacheEnabled(true);
-        img.buildDrawingCache();
-        Bitmap bitmap = ((BitmapDrawable) img.getDrawable()).getBitmap();
-        Uri uri = getImageUri(this,bitmap);
-        CropImage.activity(uri).start(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+
+        String directory;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
+        } else {
+            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
+        }
+        File direct = new File(directory);
+        if (!direct.exists()) {
+            direct.mkdirs();
+        }
+
+        File file = new File(directory, System.currentTimeMillis() + ".png");
+        if (file.exists()) {
+            file.delete();
+        }
+
+        try {
+            file.createNewFile();
+
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build();
+
+            mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                @Override
+                public void onSuccess(@NonNull String imagePath) {
+                    mSaveImageUri = Uri.fromFile(new File(imagePath));
+                    mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
+                    CropImage.activity(mSaveImageUri).start(EditImageActivity.this);
+                }
+
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            showSnackbar(e.getMessage());
+        }
     }
 
     private void showBottomSheetDialogFragment(BottomSheetDialogFragment fragment) {
