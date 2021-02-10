@@ -87,11 +87,12 @@
         android:layout_height="wrap_content"
         android:background="@color/tool_bg"
         android:orientation="horizontal"
-        android:paddingBottom="4dp"
         android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/row_editing_tools" />
 

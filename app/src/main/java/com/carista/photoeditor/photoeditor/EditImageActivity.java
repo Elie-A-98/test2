@@ -1,6 +1,7 @@
 package com.carista.photoeditor.photoeditor;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -52,6 +53,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -59,6 +62,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
@@ -97,10 +101,13 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private EditText edittext;
     private ImageView img;
     private Intent chooser;
+    private Uri mCropImageUri;
 
     @Nullable
     @VisibleForTesting
     Uri mSaveImageUri;
+
+
 
 
     @Override
@@ -466,9 +473,18 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                             return;
                         }
                     }
-
                     onStickerClick(bitmap);
                     break;
+
+                case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
+                    CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                    if (resultCode == RESULT_OK) {
+                        Uri resultUri = result.getUri();
+                        mPhotoEditorView.getSource().setImageURI(resultUri);
+                    }
+                    else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                        Exception error = result.getError();
+                    }
             }
         }
     }
@@ -557,12 +573,71 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             case IMPORT:
                 importImage();
                 break;
+            case CROP:
+                CropImage();
+                break;
+
         }
     }
 
     private void importImage() {
         Intent chooser = Device.initChooser(this);
         startActivityForResult(chooser, UploadFragment.RESULT_LOAD_IMAGE);
+    }
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(this.getContentResolver(), inImage, UUID.randomUUID().toString() + ".png", "drawing");
+        return Uri.parse(path);
+    }
+
+    private void CropImage(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+
+        String directory;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
+        } else {
+            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
+        }
+        File direct = new File(directory);
+        if (!direct.exists()) {
+            direct.mkdirs();
+        }
+
+        File file = new File(directory, System.currentTimeMillis() + ".png");
+        if (file.exists()) {
+            file.delete();
+        }
+
+        try {
+            file.createNewFile();
+
+            SaveSettings saveSettings = new SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build();
+
+            mPhotoEditor.saveAsFile(file.getAbsolutePath(), saveSettings, new PhotoEditor.OnSaveListener() {
+                @Override
+                public void onSuccess(@NonNull String imagePath) {
+                    mSaveImageUri = Uri.fromFile(new File(imagePath));
+                    mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
+                    CropImage.activity(mSaveImageUri).start(EditImageActivity.this);
+                }
+
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            showSnackbar(e.getMessage());
+        }
     }
 
     private void showBottomSheetDialogFragment(BottomSheetDialogFragment fragment) {
