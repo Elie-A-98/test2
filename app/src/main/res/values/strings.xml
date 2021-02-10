@@ -77,4 +77,6 @@
     <string name="share_post_root_url">https://carista.web.app/post/</string>
     <string name="uploading">Upload...</string>
     <string name="title">Title</string>
+    <string name="permission_granted">Permission has been granted!</string>
+    <string name="permission_denied">You need to grant permission!</string>
 </resources>

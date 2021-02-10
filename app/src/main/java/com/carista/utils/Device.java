@@ -4,9 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
-import android.os.Environment;
+import android.net.Uri;
 import android.provider.MediaStore;
+
+import androidx.core.content.FileProvider;
 
 import com.carista.R;
 
@@ -26,30 +27,32 @@ public class Device {
         return isAvailable;
     }
 
-    public static String getAppPicturesPath(Context context) {
-        String directory;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            directory = context.getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
-        } else {
-            directory = Environment.getExternalStorageDirectory() + "/" + context.getString(R.string.app_name);
-        }
-
-        File direct = new File(directory);
-        if (!direct.exists()) {
-            direct.mkdirs();
-        }
-
-        return directory;
-    }
-
-    public static Intent initChooser(Context context) {
+    public static Intent initChooser(Context context, File image) {
         Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        camIntent.putExtra(MediaStore.EXTRA_OUTPUT, "/sdcard/");
+
+        Uri photoURI = FileProvider.getUriForFile(context,
+                "com.burhanrashid52.photoeditor.fileprovider",
+                image);
+        camIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+
         Intent gallIntent = new Intent(Intent.ACTION_PICK);
         gallIntent.setType("image/*");
 
         Intent chooser = Intent.createChooser(gallIntent, context.getResources().getString(R.string.select_image));
         chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{camIntent});
+
         return chooser;
+
+    }
+
+    public static void broadcastGallery(Context context, File capturedImage) {
+        try {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Uri contentUri = Uri.fromFile(capturedImage);
+            mediaScanIntent.setData(contentUri);
+            context.sendBroadcast(mediaScanIntent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

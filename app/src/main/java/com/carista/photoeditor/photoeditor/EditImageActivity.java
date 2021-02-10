@@ -581,7 +581,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     }
 
     private void importImage() {
-        Intent chooser = Device.initChooser(this);
+        Intent chooser = Device.initChooser(this, null);
         startActivityForResult(chooser, UploadFragment.RESULT_LOAD_IMAGE);
     }
 
