@@ -153,7 +153,7 @@ public class FirestoreData {
         });
     }
 
-    public static void setPostUserIconUsername(String userId, CircleImageView userAvatar, TextView userNicknameText){
+    public static void setPostUserIconUsername(String userId, CircleImageView userAvatar, TextView userNicknameText) {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         firestore.collection("users").whereEqualTo("id", userId).addSnapshotListener((value, error) -> {
             for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
@@ -162,16 +162,6 @@ public class FirestoreData {
                 if (!avatar.isEmpty())
                     Picasso.get().load(avatar).into(userAvatar);
                 userNicknameText.setText(nickname);
-            }
-        });
-    }
-
-    public static void setPostNicknameTitle(String user, String title, TextView userNicknameTitle) {
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        firestore.collection("users").whereEqualTo("id", user).addSnapshotListener((value, error) -> {
-            for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
-                String nickname = (String) documentSnapshot.get("nickname");
-                userNicknameTitle.setText(Html.fromHtml("<b>" + nickname + "</b> " + title));
             }
         });
     }

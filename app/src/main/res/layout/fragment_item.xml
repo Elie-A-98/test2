@@ -1,168 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/post_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:layout_margin="10dp"
+    android:layout_marginTop="5dp"
+    android:paddingBottom="15dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="10dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/post_card"
+    <androidx.constraintlayout.widget.ConstraintLayout
+
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="5dp"
-        android:layout_margin="10dp"
-        app:cardElevation="10dp"
-        app:cardCornerRadius="20dp"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_post_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_user"
+            app:civ_border_color="@color/purple_200"
+            app:civ_border_width="2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-                <LinearLayout
-                    android:id="@+id/user_icon_name_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/comment_post_layout"
-                    android:padding="10dp">
+        <ImageView
+            android:id="@+id/crossButton"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/delete"
+            app:layout_constraintBottom_toBottomOf="@id/user_post_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/user_post_icon" />
 
-                    <de.hdodenhof.circleimageview.CircleImageView
-                        android:id="@+id/user_post_icon"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:civ_border_color="@color/purple_200"
-                        app:civ_border_width="2dp"
-                        android:src="@drawable/ic_user"/>
+        <TextView
+            android:id="@+id/top_post_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:text="@string/username"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/user_post_icon"
+            app:layout_constraintTop_toTopOf="@+id/user_post_icon" />
 
-                    <TextView
-                        android:id="@+id/top_post_username"
-                        android:text="Username"
-                        android:layout_marginLeft="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/post_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:text="@string/title"
+            app:layout_constraintBottom_toBottomOf="@+id/user_post_icon"
+            app:layout_constraintStart_toEndOf="@id/user_post_icon" />
 
-                    <LinearLayout
-                        android:gravity="right"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/post_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textAppearance="?attr/textAppearanceListItem"
+            app:layout_constraintBottom_toTopOf="@id/like_checkbox"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/user_post_icon" />
 
-                        <ImageView
-                            android:id="@+id/crossButton"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center_vertical"
-                            android:src="@drawable/delete"/>
-                    </LinearLayout>
 
-                </LinearLayout>
+        <CheckBox
+            android:id="@+id/like_checkbox"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/like_selection"
+            android:button="@null"
+            android:checked="false"
+            android:stateListAnimator="@animator/scale"
+            app:layout_constraintStart_toStartOf="@id/user_post_icon"
+            app:layout_constraintTop_toBottomOf="@id/post_image" />
 
-            </LinearLayout>
+        <CheckBox
+            android:id="@+id/comment_checkbox"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="7dp"
+            android:background="@drawable/ic_comment"
+            android:button="@null"
+            android:checked="false"
+            app:layout_constraintStart_toEndOf="@id/like_checkbox"
+            app:layout_constraintTop_toBottomOf="@id/post_image" />
 
-            <TextView
-                android:id="@+id/post_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Title"
-                android:layout_marginLeft="20dp" />
+        <CheckBox
+            android:id="@+id/share_checkbox"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="7dp"
+            android:background="@drawable/ic_share"
+            android:button="@null"
+            android:checked="false"
+            app:layout_constraintStart_toEndOf="@id/comment_checkbox"
+            app:layout_constraintTop_toBottomOf="@id/post_image" />
 
-            <ImageView
-                android:id="@+id/post_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:adjustViewBounds="true"
-                android:scaleType="centerInside"
-                android:layout_margin="@dimen/text_margin"
-                android:src="@drawable/abc_vector_test"
-                android:textAppearance="?attr/textAppearanceListItem"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_gravity="center_horizontal"
-                android:layout_margin="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:orientation="horizontal">
-
-                    <CheckBox
-                        android:id="@+id/like_checkbox"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:button="@null"
-                        android:checked="false"
-                        android:background="@drawable/like_selection"
-                        android:stateListAnimator="@animator/scale"
-                        android:layout_margin="5dp"
-                        />
-
-                    <CheckBox
-                        android:id="@+id/comment_checkbox"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:button="@null"
-                        android:checked="false"
-                        android:background="@drawable/ic_comment"
-                        android:layout_margin="7dp"/>
-
-                    <CheckBox
-                        android:id="@+id/share_checkbox"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:button="@null"
-                        android:checked="false"
-                        android:background="@drawable/ic_share"
-                        android:layout_margin="7dp"/>
-
-                    <TextView
-                        android:id="@+id/likes_counter"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginTop="10dp"
-                        android:textStyle="bold"
-                        android:gravity="end" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/share_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <EditText
-                        android:id="@+id/share_link"
-                        android:layout_marginTop="10dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:singleLine="true"
-                        android:focusable="false"
-                        android:background="@drawable/comment_post_layout"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/likes_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/like_checkbox"
+            app:layout_constraintTop_toBottomOf="@id/like_checkbox" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
