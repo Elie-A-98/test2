@@ -1,19 +1,28 @@
 package com.carista.utils;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
 import com.carista.R;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Device {
+    public static final int CAMERA_PERMISSION_REQUEST = 200;
 
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager manager =
@@ -27,7 +36,33 @@ public class Device {
         return isAvailable;
     }
 
+    public static boolean checkCameraPermission(Activity activity, int requestCode) {
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    activity,
+                    new String[]{Manifest.permission.CAMERA},
+                    requestCode);
+            return false;
+        }
+
+        return true;
+    }
+
+    public static File createCapturedImageFile(Context context) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+        return File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+    }
+
     public static Intent initChooser(Context context, File image) {
+
+
         Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         Uri photoURI = FileProvider.getUriForFile(context,

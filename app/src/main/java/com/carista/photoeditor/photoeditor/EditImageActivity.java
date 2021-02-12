@@ -1,10 +1,8 @@
 package com.carista.photoeditor.photoeditor;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -12,8 +10,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,7 +50,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -62,7 +57,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
@@ -83,6 +77,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     private static final String TAG = EditImageActivity.class.getSimpleName();
     public static final String FILE_PROVIDER_AUTHORITY = "com.burhanrashid52.photoeditor.fileprovider";
+    private static final int IMPORT_CAMERA_PERMISSION_REQUEST = 100;
+    private static final int LOAD_CAMERA_PERMISSION_REQUEST = 101;
     private static final int CAMERA_REQUEST = 52;
     private static final int PICK_REQUEST = 53;
     PhotoEditor mPhotoEditor;
@@ -101,13 +97,11 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private EditText edittext;
     private ImageView img;
     private Intent chooser;
-    private Uri mCropImageUri;
+    private File capturedImage;
 
     @Nullable
     @VisibleForTesting
     Uri mSaveImageUri;
-
-
 
 
     @Override
@@ -258,8 +252,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 break;
 
             case R.id.imgCamera:
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                captureImage(CAMERA_REQUEST, LOAD_CAMERA_PERMISSION_REQUEST);
                 break;
 
             case R.id.imgGallery:
@@ -448,7 +441,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             switch (requestCode) {
                 case CAMERA_REQUEST:
                     mPhotoEditor.clearAllViews();
-                    Bitmap photo = (Bitmap) data.getExtras().get("data");
+                    Bitmap photo = BitmapFactory.decodeFile(this.capturedImage.getPath());
                     mPhotoEditorView.getSource().setImageBitmap(photo);
                     break;
                 case PICK_REQUEST:
@@ -463,8 +456,8 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     break;
                 case UploadFragment.RESULT_LOAD_IMAGE:
                     Bitmap bitmap;
-                    if (data.getExtras() != null && data.getExtras().get("data") instanceof Bitmap) {
-                        bitmap = (Bitmap) data.getExtras().get("data");
+                    if (data.getData() == null && this.capturedImage != null) {
+                        bitmap = BitmapFactory.decodeFile(this.capturedImage.getPath());
                     } else {
                         try {
                             bitmap = BitmapFactory.decodeStream(this.getContentResolver().openInputStream(data.getData()));
@@ -481,10 +474,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     if (resultCode == RESULT_OK) {
                         Uri resultUri = result.getUri();
                         mPhotoEditorView.getSource().setImageURI(resultUri);
+                    } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                        System.out.println(result.getError().getMessage());
                     }
-                    else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                        Exception error = result.getError();
-                    }
+                    break;
             }
         }
     }
@@ -571,7 +564,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 showBottomSheetDialogFragment(mStickerBSFragment);
                 break;
             case IMPORT:
-                importImage();
+                captureImage(UploadFragment.RESULT_LOAD_IMAGE, IMPORT_CAMERA_PERMISSION_REQUEST);
                 break;
             case CROP:
                 CropImage();
@@ -580,30 +573,28 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         }
     }
 
-    private void importImage() {
-        Intent chooser = Device.initChooser(this, null);
-        startActivityForResult(chooser, UploadFragment.RESULT_LOAD_IMAGE);
+    private void captureImage(int requestCode, int permissionRequestCode) {
+        if (!Device.checkCameraPermission(this, permissionRequestCode))
+            return;
+
+        try {
+            capturedImage = Device.createCapturedImageFile(this);
+            chooser = Device.initChooser(this, capturedImage);
+            startActivityForResult(chooser, requestCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(this.getContentResolver(), inImage, UUID.randomUUID().toString() + ".png", "drawing");
-        return Uri.parse(path);
-    }
-
-    private void CropImage(){
+    private void CropImage() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             return;
         }
 
         String directory;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
-        } else {
-            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
-        }
+        directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
         File direct = new File(directory);
         if (!direct.exists()) {
             direct.mkdirs();
@@ -704,6 +695,26 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
             customStickerBSFragment.setStickerListener(this::onStickerClick);
             this.customStickersFragments.add(customStickerBSFragment);
             mEditingToolsAdapter.addStickerPack(pack);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case IMPORT_CAMERA_PERMISSION_REQUEST:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    captureImage(UploadFragment.RESULT_LOAD_IMAGE, IMPORT_CAMERA_PERMISSION_REQUEST);
+                } else {
+                    Snackbar.make(findViewById(R.id.rootView), R.string.permission_denied, Snackbar.LENGTH_SHORT).show();
+                }
+                break;
+            case LOAD_CAMERA_PERMISSION_REQUEST:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    captureImage(CAMERA_REQUEST, LOAD_CAMERA_PERMISSION_REQUEST);
+                } else {
+                    Snackbar.make(findViewById(R.id.rootView), R.string.permission_denied, Snackbar.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 }
