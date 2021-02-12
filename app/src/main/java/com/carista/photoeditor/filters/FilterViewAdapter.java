@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.filters;
+package com.carista.photoeditor.filters;
 
 import android.content.Context;
 import android.content.res.AssetManager;

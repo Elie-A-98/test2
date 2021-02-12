@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.base;
+package com.carista.photoeditor.base;
 
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;

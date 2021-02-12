@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.filters;
+package com.carista.photoeditor.filters;
 
 import ja.burhanrashid52.photoeditor.PhotoFilter;
 

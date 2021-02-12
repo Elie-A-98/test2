@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor;
+package com.carista.photoeditor;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;

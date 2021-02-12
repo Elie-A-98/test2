@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor;
+package com.carista.photoeditor;
 
 import android.Manifest;
 import android.content.Intent;
@@ -35,11 +35,11 @@ import androidx.transition.TransitionManager;
 import com.carista.MainActivity;
 import com.carista.R;
 import com.carista.data.StickerPack;
-import com.carista.photoeditor.photoeditor.base.BaseActivity;
-import com.carista.photoeditor.photoeditor.filters.FilterListener;
-import com.carista.photoeditor.photoeditor.filters.FilterViewAdapter;
-import com.carista.photoeditor.photoeditor.tools.EditingToolsAdapter;
-import com.carista.photoeditor.photoeditor.tools.ToolType;
+import com.carista.photoeditor.base.BaseActivity;
+import com.carista.photoeditor.filters.FilterListener;
+import com.carista.photoeditor.filters.FilterViewAdapter;
+import com.carista.photoeditor.tools.EditingToolsAdapter;
+import com.carista.photoeditor.tools.ToolType;
 import com.carista.ui.main.fragments.UploadFragment;
 import com.carista.utils.Device;
 import com.carista.utils.FirestoreData;

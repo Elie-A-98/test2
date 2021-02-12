@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor;
+package com.carista.photoeditor;
 
 import android.content.Context;
 import android.graphics.Color;

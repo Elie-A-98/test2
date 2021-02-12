@@ -11,7 +11,7 @@ import com.carista.R;
 import com.carista.data.StickerItem;
 import com.carista.data.StickerPack;
 import com.carista.data.realtimedb.models.CommentModel;
-import com.carista.photoeditor.photoeditor.OnStickersPackLoad;
+import com.carista.photoeditor.OnStickersPackLoad;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;

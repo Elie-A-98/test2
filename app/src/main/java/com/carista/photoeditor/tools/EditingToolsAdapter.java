@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.tools;
+package com.carista.photoeditor.tools;
 
 import android.view.LayoutInflater;
 import android.view.View;

@@ -7,7 +7,7 @@
         android:shortcutShortLabel="@string/edit_shortcut_short_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="com.carista.photoeditor.photoeditor.EditImageActivity"
+            android:targetClass="com.carista.photoeditor.EditImageActivity"
             android:targetPackage="com.carista" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
