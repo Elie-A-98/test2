@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -23,6 +24,7 @@ import java.util.Date;
 
 public class Device {
     public static final int CAMERA_PERMISSION_REQUEST = 200;
+    public static final String IS_FIRST_RUN = "IS_FIRST_RUN";
 
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager manager =
@@ -89,5 +91,16 @@ public class Device {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean isFirstRun(Context context) {
+        return context.getSharedPreferences(IS_FIRST_RUN, Context.MODE_PRIVATE).getBoolean(IS_FIRST_RUN, true);
+    }
+
+    public static void setFirstRun(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(IS_FIRST_RUN, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(IS_FIRST_RUN, false);
+        editor.apply();
     }
 }

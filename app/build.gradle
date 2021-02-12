@@ -37,8 +37,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.preference:preference:1.1.1'
@@ -78,6 +76,8 @@ dependencies {
     //Crop Image
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
+    // App intro
+    implementation 'com.github.AppIntro:AppIntro:6.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
