@@ -76,6 +76,9 @@ dependencies {
     //Crop Image
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
+    // Blur image
+    implementation 'net.qiujuer.genius:graphics:2.0.0'
+
     // App intro
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 }

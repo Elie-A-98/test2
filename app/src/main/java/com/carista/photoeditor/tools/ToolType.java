@@ -13,5 +13,6 @@ public enum ToolType {
     EMOJI,
     STICKER,
     IMPORT,
-    CROP
+    CROP,
+    BLUR
 }

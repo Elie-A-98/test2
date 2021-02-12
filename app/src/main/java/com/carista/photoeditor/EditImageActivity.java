@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -51,6 +52,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import net.qiujuer.genius.graphics.Blur;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +84,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
     private static final int LOAD_CAMERA_PERMISSION_REQUEST = 101;
     private static final int CAMERA_REQUEST = 52;
     private static final int PICK_REQUEST = 53;
+    private static final int BLUR_IMAGE_ACTIVITY_REQUEST_CODE = 403;
     PhotoEditor mPhotoEditor;
     private PhotoEditorView mPhotoEditorView;
     private PropertiesBSFragment mPropertiesBSFragment;
@@ -478,6 +482,26 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                         System.out.println(result.getError().getMessage());
                     }
                     break;
+
+                case BLUR_IMAGE_ACTIVITY_REQUEST_CODE:
+                    result = CropImage.getActivityResult(data);
+                    Rect rect = result.getCropRect();
+                    Bitmap croppedBmp = Bitmap.createBitmap(((BitmapDrawable) mPhotoEditorView.getSource().getDrawable()).getBitmap(),
+                            rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+
+                    ImageView iv = new ImageView(getApplicationContext());
+                    Bitmap overlay = Blur.onStackBlurJava(croppedBmp, 25);
+                    RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.WRAP_CONTENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+                    lp.width = rect.right - rect.left;
+                    lp.height = rect.bottom - rect.top;
+                    lp.leftMargin = rect.left;
+                    lp.topMargin = rect.top;
+                    iv.setImageBitmap(overlay);
+                    iv.setLayoutParams(lp);
+
+                    mPhotoEditorView.addView(iv, lp);
+
+                    break;
             }
         }
     }
@@ -567,7 +591,10 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 captureImage(UploadFragment.RESULT_LOAD_IMAGE, IMPORT_CAMERA_PERMISSION_REQUEST);
                 break;
             case CROP:
-                CropImage();
+                cropImage(CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE);
+                break;
+            case BLUR:
+                cropImage(BLUR_IMAGE_ACTIVITY_REQUEST_CODE);
                 break;
 
         }
@@ -587,7 +614,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     }
 
-    private void CropImage() {
+    private void cropImage(int requestCode) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             return;
@@ -618,7 +645,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 public void onSuccess(@NonNull String imagePath) {
                     mSaveImageUri = Uri.fromFile(new File(imagePath));
                     mPhotoEditorView.getSource().setImageURI(mSaveImageUri);
-                    CropImage.activity(mSaveImageUri).start(EditImageActivity.this);
+                    startActivityForResult(CropImage.activity(mSaveImageUri).getIntent(EditImageActivity.this), requestCode);
                 }
 
                 @Override
