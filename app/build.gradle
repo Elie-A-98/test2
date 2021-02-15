@@ -73,7 +73,7 @@ dependencies {
     // gson
     implementation 'com.google.code.gson:gson:2.8.6'
 
-    //Crop Image
+    //CropImage
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
     // Blur image

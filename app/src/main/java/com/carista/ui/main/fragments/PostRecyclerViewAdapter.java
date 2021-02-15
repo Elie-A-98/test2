@@ -15,6 +15,7 @@ import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
 import com.carista.ui.main.CommentsActivity;
 import com.carista.ui.main.PostActivity;
+import com.carista.ui.main.UserProfileActivity;
 import com.carista.utils.FirestoreData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
@@ -113,6 +114,20 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
 
             Intent shareIntent = Intent.createChooser(sendIntent, holder.mItem.title);
             view.getContext().startActivity(shareIntent);
+        });
+
+        holder.mNicknameView.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
+            intent.putExtra("userId", holder.mItem.userId);
+            intent.putExtra("nickname", holder.mNicknameView.getText().toString());
+            view.getContext().startActivity(intent);
+        });
+
+        holder.mCircleUserImage.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
+            intent.putExtra("userId", holder.mItem.userId);
+            intent.putExtra("nickname", holder.mNicknameView.getText().toString());
+            view.getContext().startActivity(intent);
         });
     }
 
