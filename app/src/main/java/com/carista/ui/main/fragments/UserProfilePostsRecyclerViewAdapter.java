@@ -9,16 +9,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.carista.R;
-import com.carista.ui.main.fragments.dummy.DummyContent.DummyItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem}.
- * TODO: Replace the implementation with code for your data type.
- */
+
 public class UserProfilePostsRecyclerViewAdapter extends RecyclerView.Adapter<UserProfilePostsRecyclerViewAdapter.ViewHolder> {
 
     private final List<String> mItems;
