@@ -62,12 +62,10 @@ public class UserProfileActivity extends AppCompatActivity {
         firestore.collection("users").whereEqualTo("id", userId).get().addOnCompleteListener(task -> {
             if(task.isSuccessful()){
                 for(QueryDocumentSnapshot documentSnapshot:task.getResult()){
-                    HashMap<String, Object> updates = new HashMap<>();
                     ArrayList<String> followers;
                     if(followButton.getText().toString().equals("Follow")) {
                         followers = (ArrayList<String>) documentSnapshot.get("followers");
                         if (followers == null) {
-                            followers = new ArrayList<>();
                             return;
                         }
                         if(followers.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())){
@@ -79,37 +77,54 @@ public class UserProfileActivity extends AppCompatActivity {
             }
         });
 
+        firestore.collection("users").get().addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                int following = 0;
+                for(QueryDocumentSnapshot documentSnapshot:task.getResult()){
+                    String id = (String) documentSnapshot.get("id");
+                    if(id.equals(userId))
+                        continue;
+                    ArrayList<String> followers;
+                    followers = (ArrayList<String>) documentSnapshot.get("followers");
+                    if (followers == null) {
+                        continue;
+                    }
+                    if(followers.contains(userId)){
+                        following++;
+                    }
+                }
+                followingCount.setText(String.valueOf(following));
+            }
+        });
+
 
         followButton.setOnClickListener(view -> {
             if(userId.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
                 return;
 
-            firestore.collection("users").whereEqualTo("id", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if(task.isSuccessful()){
-                        for(QueryDocumentSnapshot documentSnapshot:task.getResult()){
-                            HashMap<String, Object> updates = new HashMap<>();
-                            ArrayList<String> followers;
-                            if(followButton.getText().toString().equals("Follow")){
-                                followers = (ArrayList<String>) documentSnapshot.get("followers");
-                                if(followers==null){
-                                    followers = new ArrayList<>();
-                                }
-                                followers.add(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                updates.put("followers", followers);
-                                firestore.collection("users").document(documentSnapshot.getId()).update(updates);
-                                followButton.setText("Followed");
-                                followersCount.setText(String.valueOf(followers.size()));
+            firestore.collection("users").whereEqualTo("id", userId).get().addOnCompleteListener(task -> {
+                if(task.isSuccessful()){
+                    for(QueryDocumentSnapshot documentSnapshot:task.getResult()){
+                        HashMap<String, Object> updates = new HashMap<>();
+                        ArrayList<String> followers;
+                        if(followButton.getText().toString().equals("Follow")){
+                            followers = (ArrayList<String>) documentSnapshot.get("followers");
+                            if(followers==null){
+                                followers = new ArrayList<>();
                             }
-                            else{
-                                followers = (ArrayList<String>) documentSnapshot.get("followers");
-                                followers.remove(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                updates.put("followers", followers);
-                                firestore.collection("users").document(documentSnapshot.getId()).update(updates);
-                                followButton.setText("Follow");
-                                followersCount.setText(String.valueOf(followers.size()));
-                            }
+                            followers.add(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            updates.put("followers", followers);
+                            firestore.collection("users").document(documentSnapshot.getId()).update(updates);
+                            followButton.setText("Followed");
+                            followersCount.setText(String.valueOf(followers.size()));
+                        }
+                        else{
+                            followers = (ArrayList<String>) documentSnapshot.get("followers");
+                            followers.remove(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            updates.put("followers", followers);
+                            firestore.collection("users").document(documentSnapshot.getId()).update(updates);
+                            followButton.setText("Follow");
+                            followersCount.setText(String.valueOf(followers.size()));
                         }
                     }
                 }
