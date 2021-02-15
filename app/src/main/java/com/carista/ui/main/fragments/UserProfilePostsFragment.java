@@ -63,7 +63,8 @@ public class UserProfilePostsFragment extends Fragment {
         firestore.collection("posts").whereEqualTo("userId",userId).addSnapshotListener((value, error) -> {
             for(DocumentSnapshot documentSnapshot : value.getDocuments()){
                 String imageUrl = (String) documentSnapshot.get("image");
-                adapter.addPost(imageUrl);
+                String postId = (String) documentSnapshot.get("id");
+                adapter.addPost(imageUrl, postId);
             }
         });
     }
