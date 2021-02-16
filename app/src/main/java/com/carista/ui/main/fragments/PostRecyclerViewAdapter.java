@@ -113,6 +113,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         });
 
         Picasso.get().load(items.get(position).image).placeholder(R.drawable.place_holder_car).into(holder.mImageView);
+
         holder.mImageView.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), PostActivity.class);
             intent.putExtra("postId", holder.mItem.id);
