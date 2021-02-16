@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.tools;
+package com.carista.photoeditor.tools;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +36,7 @@ public class EditingToolsAdapter extends RecyclerView.Adapter<EditingToolsAdapte
         mToolList.add(new ToolModel("Sticker", R.drawable.ic_sticker));
         mToolList.add(new ToolModel("Import", R.drawable.ic_add_photo));
         mToolList.add(new ToolModel("Crop", R.drawable.ic_crop));
+        mToolList.add(new ToolModel("Blur", R.drawable.ic_blur));
     }
 
     public interface OnItemSelected {

@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.carista"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 3
         versionName "1.2"
@@ -35,20 +35,15 @@ android {
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'com.google.firebase:firebase-firestore:22.0.2'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     // firebase  auth
-    implementation 'com.google.firebase:firebase-auth:20.0.1'
+    implementation 'com.google.firebase:firebase-auth:20.0.2'
     // firebase ui auth
     implementation 'com.firebaseui:firebase-ui-auth:7.1.1'
     // Import the BoM for the Firebase platform
@@ -81,6 +76,11 @@ dependencies {
     //Crop Image
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
+    // Blur image
+    implementation 'net.qiujuer.genius:graphics:2.0.0'
+
+    // App intro
+    implementation 'com.github.AppIntro:AppIntro:6.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

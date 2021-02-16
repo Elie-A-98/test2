@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor;
+package com.carista.photoeditor;
 
 import android.app.Dialog;
 import android.content.Context;

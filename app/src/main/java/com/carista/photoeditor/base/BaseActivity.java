@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.base;
+package com.carista.photoeditor.base;
 
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.carista.R;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -20,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar;
 public class BaseActivity extends AppCompatActivity {
 
     public static final int READ_WRITE_STORAGE = 52;
+    public static final int PERMISSION_GRANTED = 200;
     private ProgressDialog mProgressDialog;
 
 
@@ -29,13 +31,15 @@ public class BaseActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(
                     this,
                     new String[]{permission},
-                    READ_WRITE_STORAGE);
+                    PERMISSION_GRANTED);
         }
         return isGranted;
     }
 
     public void isPermissionGranted(boolean isGranted, String permission) {
-
+        Snackbar.make(getCurrentFocus(), isGranted?
+                R.string.permission_granted: R.string.permission_denied
+                , Snackbar.LENGTH_SHORT).show();
     }
 
     public void makeFullScreen() {

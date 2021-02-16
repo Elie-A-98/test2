@@ -1,4 +1,4 @@
-package com.carista.photoeditor.photoeditor.tools;
+package com.carista.photoeditor.tools;
 
 /**
  * @author <a href="https://github.com/burhanrashid52">Burhanuddin Rashid</a>
@@ -13,5 +13,6 @@ public enum ToolType {
     EMOJI,
     STICKER,
     IMPORT,
-    CROP
+    CROP,
+    BLUR
 }

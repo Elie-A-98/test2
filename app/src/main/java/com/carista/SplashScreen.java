@@ -7,6 +7,8 @@ import android.os.Handler;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.carista.ui.main.Intro;
+import com.carista.utils.Device;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.material.snackbar.Snackbar;
@@ -32,6 +34,12 @@ public class SplashScreen extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
 
         getSupportActionBar().hide();
+
+        if (Device.isFirstRun(this)) {
+            startActivity(new Intent(this, Intro.class));
+            finish();
+            return;
+        }
 
         new Handler().postDelayed(() -> {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {

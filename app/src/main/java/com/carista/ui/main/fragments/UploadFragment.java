@@ -2,6 +2,7 @@ package com.carista.ui.main.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -27,16 +28,19 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.Date;
 
 
 public class UploadFragment extends Fragment {
 
     public static final int RESULT_LOAD_IMAGE = 100;
+
     private Intent chooser;
     private ImageView imageView;
     private Button chooseButton, uploadButton;
     private EditText titleEditText;
+    File capturedImage;
 
     public UploadFragment() {
         // Required empty public constructor
@@ -63,10 +67,18 @@ public class UploadFragment extends Fragment {
         uploadButton = view.findViewById(R.id.new_post_upload);
         titleEditText = view.findViewById(R.id.new_post_title);
         imageView = view.findViewById(R.id.new_post_image);
-        chooser = Device.initChooser(getContext());
 
         chooseButton.setOnClickListener(view1 -> {
-            startActivityForResult(chooser, RESULT_LOAD_IMAGE);
+            if (!Device.checkCameraPermission(getActivity(), Device.CAMERA_PERMISSION_REQUEST))
+                return;
+
+            try {
+                capturedImage = Device.createCapturedImageFile(view1.getContext());
+                chooser = Device.initChooser(getContext(), capturedImage);
+                startActivityForResult(chooser, RESULT_LOAD_IMAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         uploadButton.setOnClickListener(view1 -> {
@@ -114,11 +126,12 @@ public class UploadFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == Activity.RESULT_OK && null != data) {
             Bitmap bitmap;
-            if (data.getExtras() != null && data.getExtras().get("data") instanceof Bitmap) {
-                bitmap = (Bitmap) data.getExtras().get("data");
+            if (data.getData() == null && this.capturedImage != null) {
+                bitmap = BitmapFactory.decodeFile(this.capturedImage.getPath());
             } else {
                 try {
                     bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(data.getData()));
+                    Device.broadcastGallery(getContext(), capturedImage);
                 } catch (Exception e) {
                     Snackbar.make(getActivity().getCurrentFocus(), R.string.error_getting_image, Snackbar.LENGTH_SHORT).show();
                     return;
@@ -126,6 +139,21 @@ public class UploadFragment extends Fragment {
             }
 
             imageView.setImageBitmap(bitmap);
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Device.CAMERA_PERMISSION_REQUEST:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Snackbar.make(getActivity().getCurrentFocus(), R.string.permission_granted, Snackbar.LENGTH_SHORT).show();
+                    chooseButton.callOnClick();
+                } else {
+                    Snackbar.make(getActivity().getCurrentFocus(), R.string.permission_denied, Snackbar.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 }

@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.carista.R;
-import com.carista.data.realtimedb.models.CommentModel;
-import com.carista.utils.Data;
 import com.carista.utils.FirestoreData;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
@@ -42,8 +39,6 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static com.carista.photoeditor.photoeditor.TextEditorDialogFragment.TAG;
 
 
 public class UserFragment extends Fragment {

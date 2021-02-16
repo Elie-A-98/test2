@@ -5,14 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
@@ -26,6 +23,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerViewAdapter.ViewHolder> {
 
@@ -72,7 +71,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = this.items.get(position);
 
-        FirestoreData.setPostNicknameTitle(this.items.get(position).userId, this.items.get(position).title, holder.mTitleView);
+        holder.mTitleView.setText(this.items.get(position).title);
         FirestoreData.getLikesCount(this.items.get(position).id, holder.mLikeCounterView);
         FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
         FirestoreData.setPostUserIconUsername(this.items.get(position).userId, holder.mCircleUserImage, holder.mNicknameView);
@@ -98,7 +97,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             view.getContext().startActivity(intent);
         });
 
-        Picasso.get().load(items.get(position).image).resize(holder.mCardView.getWidth(), 600).centerCrop().into(holder.mImageView);
+        Picasso.get().load(items.get(position).image).placeholder(R.drawable.place_holder_car).into(holder.mImageView);
         holder.mImageView.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), PostActivity.class);
             intent.putExtra("postId", holder.mItem.id);
@@ -131,8 +130,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         public PostModel mItem;
         public TextView mLikeCounterView, mNicknameView;
         public CheckBox mLikeCheckbox, mCommentCheckbox, mShareCheckbox;
-        public EditText mShareLink;
-        public LinearLayout mShareLayout;
         public CircleImageView mCircleUserImage;
 
         public ViewHolder(View view) {
@@ -146,8 +143,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             mLikeCounterView = view.findViewById(R.id.likes_counter);
             mCommentCheckbox = view.findViewById(R.id.comment_checkbox);
             mShareCheckbox = view.findViewById(R.id.share_checkbox);
-            mShareLink = view.findViewById(R.id.share_link);
-            mShareLayout = view.findViewById(R.id.share_layout);
             mNicknameView = view.findViewById(R.id.top_post_username);
             mCircleUserImage = view.findViewById(R.id.user_post_icon);
             this.setIsRecyclable(false);
