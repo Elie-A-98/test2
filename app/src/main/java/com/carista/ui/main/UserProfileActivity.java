@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -23,6 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class UserProfileActivity extends AppCompatActivity {
+
+    public static final int FOLLOWERS_VIEW = 0;
+    public static final int FOLLOWING_VIEW = 1;
 
     private CircleImageView userAvatar;
     private TextView postsCount, followersCount, followingCount, userNickname;
@@ -129,6 +133,20 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
                 }
             });
+        });
+
+        followersCount.setOnClickListener(view -> {
+            Intent intent = new Intent(UserProfileActivity.this, FollowUsersActivity.class);
+            intent.putExtra("ViewType", FOLLOWERS_VIEW);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
+        });
+
+        followingCount.setOnClickListener(view -> {
+            Intent intent = new Intent(UserProfileActivity.this, FollowUsersActivity.class);
+            intent.putExtra("ViewType", FOLLOWING_VIEW);
+            intent.putExtra("userId", userId);
+            startActivity(intent);
         });
     }
 
