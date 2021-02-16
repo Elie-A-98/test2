@@ -52,8 +52,9 @@ public class UserProfileActivity extends AppCompatActivity {
                     for (DocumentSnapshot documentSnapshot1 : value1.getDocuments()) {
                         String userProfile = String.valueOf(documentSnapshot1.get("avatar"));
                         String userNickname = String.valueOf(documentSnapshot1.get("nickname"));
-                        if (!userProfile.isEmpty()) {
+                        if (!userNickname.isEmpty())
                             UserProfileName.setText(userNickname);
+                        if (!userProfile.isEmpty()) {
                             Picasso.get().load(userProfile).into(UserProfilePicture);
                             getSupportActionBar().setTitle(userNickname);
                         }
