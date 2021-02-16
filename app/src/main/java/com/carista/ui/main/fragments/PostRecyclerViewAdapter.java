@@ -9,8 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.carista.R;
@@ -39,11 +37,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
 
     public void addPost(PostModel postModel) {
         this.items.add(postModel);
-        notifyDataSetChanged();
-    }
-
-    public void addPost(List<PostModel> postModels) {
-        this.items.addAll(postModels);
         notifyDataSetChanged();
     }
 
@@ -80,12 +73,16 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         FirestoreData.setPostUserIconUsername(this.items.get(position).userId, holder.mCircleUserImage, holder.mNicknameView);
 
         holder.mNicknameView.setOnClickListener(view -> {
+            if (holder.itemView.getContext() instanceof UserProfileActivity)
+                return;
             Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
             intent.putExtra("postId", this.items.get(position).id);
             view.getContext().startActivity(intent);
         });
 
         holder.mCircleUserImage.setOnClickListener(view -> {
+            if (holder.itemView.getContext() instanceof UserProfileActivity)
+                return;
             Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
             intent.putExtra("postId", this.items.get(position).id);
             view.getContext().startActivity(intent);
