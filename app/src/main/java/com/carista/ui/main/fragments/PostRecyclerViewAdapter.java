@@ -9,12 +9,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
 import com.carista.ui.main.CommentsActivity;
 import com.carista.ui.main.PostActivity;
+import com.carista.ui.main.UserProfileActivity;
 import com.carista.utils.FirestoreData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
@@ -76,6 +79,18 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
         FirestoreData.setPostUserIconUsername(this.items.get(position).userId, holder.mCircleUserImage, holder.mNicknameView);
 
+        holder.mNicknameView.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
+            intent.putExtra("postId", this.items.get(position).id);
+            view.getContext().startActivity(intent);
+        });
+
+        holder.mCircleUserImage.setOnClickListener(view -> {
+            Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
+            intent.putExtra("postId", this.items.get(position).id);
+            view.getContext().startActivity(intent);
+        });
+
         holder.mimgViewRemoveIcon.setOnClickListener(v -> {
             int position1 = holder.getAdapterPosition();
             if (this.items.get(position1).userId.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
@@ -115,6 +130,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             view.getContext().startActivity(shareIntent);
         });
     }
+
 
     @Override
     public int getItemCount() {

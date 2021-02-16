@@ -85,7 +85,6 @@ public class UserPostsFragment extends Fragment {
                             id = String.valueOf(documentSnapshot.get("id"));
                             adapter.addPost(new PostModel(id, documentSnapshot.getData()));
                         }
-
                     }
                 }
             });
