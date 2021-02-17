@@ -16,11 +16,8 @@ import com.carista.R;
 import com.carista.data.realtimedb.models.PostModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -33,7 +30,6 @@ public class UserPostsFragment extends Fragment {
     }
 
     public UserPostsFragment(boolean isUserLikesOnly) {
-
         this.isUserLikesOnly = isUserLikesOnly;
     }
 
@@ -74,18 +70,14 @@ public class UserPostsFragment extends Fragment {
             });
         } else {
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-            firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                    String id = "";
-                    adapter.clearData();
-                    for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
-                        ArrayList<String> likes = (ArrayList<String>) documentSnapshot.get("likes");
-                        if (likes.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                            id = String.valueOf(documentSnapshot.get("id"));
-                            adapter.addPost(new PostModel(id, documentSnapshot.getData()));
-                        }
-
+            firestore.collection("posts").orderBy("timestamp", Query.Direction.DESCENDING).addSnapshotListener((value, error) -> {
+                String id;
+                adapter.clearData();
+                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                    ArrayList<String> likes = (ArrayList<String>) documentSnapshot.get("likes");
+                    if (likes.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                        id = String.valueOf(documentSnapshot.get("id"));
+                        adapter.addPost(new PostModel(id, documentSnapshot.getData()));
                     }
                 }
             });

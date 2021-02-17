@@ -40,11 +40,6 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         notifyDataSetChanged();
     }
 
-    public void addPost(List<PostModel> postModels) {
-        this.items.addAll(postModels);
-        notifyDataSetChanged();
-    }
-
     public void removePost(int position) {
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -77,6 +72,22 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         FirestoreData.isLikedByUser(this.items.get(position).id, holder.mLikeCheckbox, holder.mLikeCounterView);
         FirestoreData.setPostUserIconUsername(this.items.get(position).userId, holder.mCircleUserImage, holder.mNicknameView);
 
+        holder.mNicknameView.setOnClickListener(view -> {
+            if (holder.itemView.getContext() instanceof UserProfileActivity)
+                return;
+            Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
+            intent.putExtra("postId", this.items.get(position).id);
+            view.getContext().startActivity(intent);
+        });
+
+        holder.mCircleUserImage.setOnClickListener(view -> {
+            if (holder.itemView.getContext() instanceof UserProfileActivity)
+                return;
+            Intent intent = new Intent(view.getContext(), UserProfileActivity.class);
+            intent.putExtra("postId", this.items.get(position).id);
+            view.getContext().startActivity(intent);
+        });
+
         holder.mimgViewRemoveIcon.setOnClickListener(v -> {
             int position1 = holder.getAdapterPosition();
             if (this.items.get(position1).userId.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
@@ -99,6 +110,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         });
 
         Picasso.get().load(items.get(position).image).placeholder(R.drawable.place_holder_car).into(holder.mImageView);
+
         holder.mImageView.setOnClickListener(view -> {
             Intent intent = new Intent(view.getContext(), PostActivity.class);
             intent.putExtra("postId", holder.mItem.id);
@@ -130,6 +142,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             view.getContext().startActivity(intent);
         });
     }
+
 
     @Override
     public int getItemCount() {
