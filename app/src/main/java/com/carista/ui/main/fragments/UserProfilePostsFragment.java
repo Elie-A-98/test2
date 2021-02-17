@@ -2,25 +2,19 @@ package com.carista.ui.main.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.carista.R;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 /**
  * A fragment representing a list of Items.
@@ -55,13 +49,12 @@ public class UserProfilePostsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         userId = getActivity().getIntent().getExtras().getString("userId");
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        firestore.collection("posts").whereEqualTo("userId",userId).addSnapshotListener((value, error) -> {
-            for(DocumentSnapshot documentSnapshot : value.getDocuments()){
+        firestore.collection("posts").whereEqualTo("userId", userId).addSnapshotListener((value, error) -> {
+            for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
                 String imageUrl = (String) documentSnapshot.get("image");
                 String postId = (String) documentSnapshot.get("id");
                 adapter.addPost(imageUrl, postId);

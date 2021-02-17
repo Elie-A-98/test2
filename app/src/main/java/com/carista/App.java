@@ -8,6 +8,10 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 import com.carista.api.RetrofitManager;
 
+import static com.carista.NotificationsService.BROADCAST_CHANNEL_ID;
+import static com.carista.NotificationsService.NEW_STICKERS_PACK_CHANNEL_ID;
+import static com.carista.NotificationsService.USER_CHANNEL_ID;
+
 public class App extends Application {
 
     public static final String PREF_DARK_THEME = "dark_theme";
@@ -26,5 +30,9 @@ public class App extends Application {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         RetrofitManager.getInstance(getApplicationContext());
+
+        NotificationsService.createNotificationChannel(this, "Users", USER_CHANNEL_ID);
+        NotificationsService.createNotificationChannel(this, "Broadcast", BROADCAST_CHANNEL_ID);
+        NotificationsService.createNotificationChannel(this, "Stickers", NEW_STICKERS_PACK_CHANNEL_ID);
     }
 }

@@ -32,13 +32,16 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView postsCount, followersCount, followingCount, userNickname;
     private Button followButton;
 
+    public String userId;
+    public String nickname;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
-        String userId = getIntent().getExtras().getString("userId");
-        String nickname = getIntent().getExtras().getString("nickname");
+        userId = getIntent().getExtras().getString("userId");
+        nickname = getIntent().getExtras().getString("nickname");
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
