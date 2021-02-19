@@ -3,15 +3,21 @@ package com.carista;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.viewpager.widget.ViewPager;
 
 import com.carista.photoeditor.EditImageActivity;
 import com.carista.ui.main.SectionsPagerAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +43,21 @@ public class MainActivity extends AppCompatActivity {
 
         if (getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals("com.carista.MainActivity.UserFragment"))
             viewPager.setCurrentItem(2);
+
+        FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(1)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+
+        mFirebaseRemoteConfig.fetchAndActivate()
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        boolean isFirstRun = mFirebaseRemoteConfig.getBoolean("IS_FIRST_RUN");
+                        if (isFirstRun)
+                            Toast.makeText(this, "Test", Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     @Override

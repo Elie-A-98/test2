@@ -84,6 +84,14 @@ dependencies {
 
     // Push Notifications
     implementation 'com.google.firebase:firebase-messaging'
+
+    // In-app Messaging
+    implementation 'com.google.firebase:firebase-inappmessaging-display'
+    implementation 'com.google.firebase:firebase-analytics'
+
+    // remote config
+    implementation 'com.google.firebase:firebase-config'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
