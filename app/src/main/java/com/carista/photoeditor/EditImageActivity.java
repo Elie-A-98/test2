@@ -50,6 +50,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import net.qiujuer.genius.graphics.Blur;
@@ -311,11 +315,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         showLoading("Saving...");
         String directory;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
-        } else {
-            directory = Environment.getExternalStorageDirectory() + "/" + getString(R.string.app_name);
-        }
+        directory = getExternalFilesDirs(Environment.DIRECTORY_PICTURES)[0].getPath();
         File direct = new File(directory);
         if (!direct.exists()) {
             direct.mkdirs();
@@ -414,15 +414,13 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                     byte[] data = baos.toByteArray();
                     UploadTask uploadTask = imageRef.putBytes(data);
                     uploadTask.addOnFailureListener(exception -> Snackbar.make(getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
-                            .addOnSuccessListener(taskSnapshot -> {
-                                taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
-                                    FirestoreData.uploadPost(edittext.getText().toString(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                    Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    hideLoading();
-                                    startActivity(intent);
-                                });
-                            });
+                            .addOnSuccessListener(taskSnapshot -> taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
+                                FirestoreData.uploadPost(edittext.getText().toString(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
+                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                hideLoading();
+                                startActivity(intent);
+                            }));
                 }
 
                 @Override
@@ -470,6 +468,25 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                             return;
                         }
                     }
+
+                    InputImage image = InputImage.fromBitmap(bitmap, 0);
+                    TextRecognizer recognizer = TextRecognition.getClient();
+                    recognizer.process(image).addOnSuccessListener(visionText -> {
+                        if (visionText.getText() != null && !visionText.getText().isEmpty()) {
+                            Snackbar snackbar = Snackbar.make(findViewById(R.id.photoEditorView), R.string.add_extracted_text, Snackbar.LENGTH_LONG);
+                            snackbar.setAction(R.string.yes, view -> {
+                                for (Text.TextBlock block : visionText.getTextBlocks()) {
+                                    for (Text.Line line : block.getLines()) {
+                                        String lineText = line.getText();
+                                        final TextStyleBuilder styleBuilder = new TextStyleBuilder();
+                                        mPhotoEditor.addText(lineText, styleBuilder);
+                                    }
+                                }
+                            });
+                            snackbar.show();
+                        }
+                    });
+
                     onStickerClick(bitmap);
                     break;
 

@@ -92,6 +92,8 @@ dependencies {
     // remote config
     implementation 'com.google.firebase:firebase-config'
 
+    // ml kit
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.3'
 }
 
 apply plugin: 'com.google.gms.google-services'

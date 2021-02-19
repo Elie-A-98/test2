@@ -85,4 +85,7 @@
     <string name="intro_posts_description">Upload, Share, and Explore posts!</string>
     <string name="intro_editor">Editor</string>
     <string name="intro_editor_description">Edit your images</string>
+    <string name="add_extracted_text">Image contains text, add them?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
