@@ -1,0 +1,149 @@
+package com.carista.ui.main.fragments;
+
+
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import android.graphics.drawable.BitmapDrawable;
+
+import android.os.Bundle;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import androidx.fragment.app.Fragment;
+import com.carista.R;
+
+import com.carista.utils.Device;
+import com.carista.utils.FirestoreData;
+import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.util.Date;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.storage.FirebaseStorage;
+
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import android.app.Activity;
+import android.content.Intent;
+
+public class AddPackFragment extends Fragment {
+
+    public static final int RESULT_LOAD_IMAGE = 100;
+    private Intent chooser;
+    private EditText titleEditText;
+    private Button chooseButton;
+    private Button uploadButton;
+    private ImageView imageView;
+
+    File capturedImage;
+
+    public AddPackFragment() { }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_add_pack, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        imageView = view.findViewById(R.id.new_sticker_icon);
+        titleEditText = view.findViewById(R.id.sticker_title);
+        chooseButton = view.findViewById(R.id.new_sticker_choose);
+        uploadButton = view.findViewById(R.id.new_sticker_upload);
+        chooseButton.setOnClickListener(res -> {
+            if (!Device.checkCameraPermission(getActivity(), Device.CAMERA_PERMISSION_REQUEST))
+                return;
+            try {
+                capturedImage = Device.createCapturedImageFile(res.getContext());
+                chooser = Device.initChooser(getContext(), capturedImage);
+                startActivityForResult(chooser, RESULT_LOAD_IMAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        uploadButton.setOnClickListener(res -> {
+            if (imageView.getDrawable() == null) {
+                Snackbar.make(getActivity().getCurrentFocus(), R.string.select_image, Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+            if (titleEditText.getText() == null || titleEditText.getText().toString().isEmpty()) {
+                Snackbar.make(getActivity().getCurrentFocus(), R.string.insert_title, Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+
+            FirebaseStorage firebase = FirebaseStorage.getInstance();
+            StorageReference storageRef = firebase.getReference("stickers");
+            long id = new Date().getTime();
+            String name = id + ".jpg";
+            StorageReference imageRef = storageRef.child(name);
+            imageView.setDrawingCacheEnabled(true);
+            imageView.buildDrawingCache();
+            Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
+
+            UploadTask uploadTask = imageRef.putBytes(data);
+            uploadTask.addOnFailureListener(exception -> Snackbar.make(getActivity().getCurrentFocus(), R.string.failed_to_upload, Snackbar.LENGTH_SHORT).show())
+                    .addOnSuccessListener(taskSnapshot -> {
+                        taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
+                            FirestoreData.uploadPack(id, uri.toString(),titleEditText.getText().toString().trim());
+                            imageView.setImageBitmap(null);
+                            titleEditText.setText("");
+                            Snackbar.make(getView().findViewById(R.id.admin_layout), R.string.success_packUpload, Snackbar.LENGTH_SHORT).show();
+                        });
+                    });
+        });
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == Activity.RESULT_OK && null != data) {
+            Bitmap bitmap;
+            if (data.getData() == null && this.capturedImage != null) {
+                bitmap = BitmapFactory.decodeFile(this.capturedImage.getPath());
+            } else {
+                try {
+                    bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(data.getData()));
+                    Device.broadcastGallery(getContext(), capturedImage);
+                } catch (Exception e) {
+                    Snackbar.make(getActivity().getCurrentFocus(), R.string.error_getting_image, Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            imageView.setImageBitmap(bitmap);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Device.CAMERA_PERMISSION_REQUEST:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Snackbar.make(getActivity().getCurrentFocus(), R.string.permission_granted, Snackbar.LENGTH_SHORT).show();
+                    chooseButton.callOnClick();
+                } else {
+                    Snackbar.make(getActivity().getCurrentFocus(), R.string.permission_denied, Snackbar.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+
+}

@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+
 public class SplashScreen extends AppCompatActivity {
     public static final int RC_SIGN_IN = 100;
     private static final int SPLASH_TIME_OUT = 1000;
@@ -43,9 +45,21 @@ public class SplashScreen extends AppCompatActivity {
 
         new Handler().postDelayed(() -> {
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                Intent i = new Intent(getBaseContext(), MainActivity.class);
-                startActivity(i);
-                finish();
+                FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+                firestore.collection("users").whereEqualTo("id", FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                            Boolean isAdmin = (Boolean) documentSnapshot.get("isAdmin");
+                            Intent i = new Intent(getBaseContext(), MainActivity.class);
+                            i.putExtra("isAdmin", isAdmin);
+                            startActivity(i);
+                            finish();
+                            break;
+                        }
+                    }
+                });
+
             } else {
                 // Choose authentication providers
                 List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -81,12 +95,24 @@ public class SplashScreen extends AppCompatActivity {
                             user.put("id", FirebaseAuth.getInstance().getCurrentUser().getUid());
                             user.put("nickname", "Anonymous");
                             user.put("avatar", "");
+                            user.put("isAdmin", false);
                             firestore.collection("users").add(user);
-                            startActivity(new Intent(me, MainActivity.class));
+                            //startActivity(new Intent(me, MainActivity.class));
+                            //finish();
+                            Intent i = new Intent(me, MainActivity.class);
+                            i.putExtra("isAdmin", false);
+                            startActivity(i);
                             finish();
                         } else {
-                            startActivity(new Intent(me, MainActivity.class));
-                            finish();
+                            //startActivity(new Intent(me, MainActivity.class));
+                            //finish();
+                            for(DocumentSnapshot documentSnapshot: value.getDocuments()) {
+                                Boolean isAdmin = (Boolean) documentSnapshot.get("isAdmin");
+                                Intent i = new Intent(me, MainActivity.class);
+                                i.putExtra("isAdmin", isAdmin);
+                                startActivity(i);
+                                finish();
+                            }
                         }
                     }
                 });

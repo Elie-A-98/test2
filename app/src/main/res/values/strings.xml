@@ -22,6 +22,7 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="tab_text_3">User</string>
+    <string name="tab_text_4">Admin</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="logout">Logout</string>
@@ -32,9 +33,15 @@
     <string name="error_getting_image">Error selecting image</string>
     <string name="insert_title">Insert title!</string>
     <string name="failed_to_upload">Failed to upload image</string>
+    <string name="failed_to_upload_pack">Failed to upload pack</string>
+    <string name="failed_to_upload_sticker">Failed to upload sticker</string>
     <string name="new_upload_title">Post title</string>
     <string name="dummy_upload">Upload a new post</string>
-
+    <string name="stickers_upload">Upload a new sticker</string>
+    <string name="packs_upload">Upload a new pack</string>
+    <string name="sticker_title">Sticker title</string>
+    <string name="pack_title">Pack title</string>
+    <string name="sticker_name">Sticker name</string>
     <string name="label_brush">Brush</string>
     <string name="label_text">Text</string>
     <string name="label_emoji">Emoji</string>
@@ -88,4 +95,16 @@
     <string name="add_extracted_text">Image contains text, add them?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="change_packName">Tap on the pack\'s name to update it</string>
+    <string name="change_stickerName">Tap on the sticker to update it</string>
+    <string name="success_packUpload">Pack uploaded</string>
+    <string name="success_stickerUpload">Sticker uploaded</string>
+    <string name="new_packname">New pack name</string>
+    <string name="deletePack">Delete</string>
+    <string name="new_stickername">New sticker name</string>
+    <string name="deleteStickerPack">Yes</string>
+    <string name="deleteSticker">Delete sticker</string>
+    <string name="delete_sticker_confirm_message">Are you sure you want to delete this sticker ?</string>
+    <string name="delete_pack_confirm_message">Are you sure you want to delete this pack ?</string>
+    <string name="doNotDeletePack">No</string>
 </resources>

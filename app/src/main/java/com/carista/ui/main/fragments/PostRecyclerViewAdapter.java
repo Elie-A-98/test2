@@ -40,15 +40,23 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
         notifyDataSetChanged();
     }
 
+//    public void removePost(int position) {
+//
+//        FirebaseStorage storage = FirebaseStorage.getInstance();
+//        StorageReference storageRef = storage.getReference("posts");
+//
+//        PostModel m = this.items.get(position);
+//        StorageReference imageRef = storageRef.child(m.id + ".jpg");
+//
+//        imageRef.delete().addOnSuccessListener(aVoid -> FirestoreData.removePost(m.id));
+//        this.items.remove(position);
+//        notifyItemRemoved(position);
+//        notifyItemRangeChanged(position, items.size());
+//    }
+
     public void removePost(int position) {
-
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference("posts");
-
         PostModel m = this.items.get(position);
-        StorageReference imageRef = storageRef.child(m.id + ".jpg");
-
-        imageRef.delete().addOnSuccessListener(aVoid -> FirestoreData.removePost(m.id));
+        FirestoreData.removePost(m.id);
         this.items.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, items.size());
@@ -90,8 +98,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
 
         holder.mimgViewRemoveIcon.setOnClickListener(v -> {
             int position1 = holder.getAdapterPosition();
-            if (this.items.get(position1).userId.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
-                removePost(position1);
+            removePost(position1);
         });
 
         holder.mLikeCheckbox.setOnClickListener(view -> {
@@ -173,7 +180,7 @@ public class PostRecyclerViewAdapter extends RecyclerView.Adapter<PostRecyclerVi
             mShareCheckbox = view.findViewById(R.id.share_checkbox);
             mNicknameView = view.findViewById(R.id.top_post_username);
             mCircleUserImage = view.findViewById(R.id.user_post_icon);
-            this.setIsRecyclable(false);
+            this.setIsRecyclable(true);
         }
     }
 

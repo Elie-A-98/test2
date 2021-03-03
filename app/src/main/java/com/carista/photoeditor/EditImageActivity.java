@@ -73,6 +73,9 @@ import ja.burhanrashid52.photoeditor.SaveSettings;
 import ja.burhanrashid52.photoeditor.TextStyleBuilder;
 import ja.burhanrashid52.photoeditor.ViewType;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
 public class EditImageActivity extends BaseActivity implements OnPhotoEditorListener,
@@ -417,9 +420,16 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                             .addOnSuccessListener(taskSnapshot -> taskSnapshot.getMetadata().getReference().getDownloadUrl().addOnSuccessListener(uri -> {
                                 FirestoreData.uploadPost(edittext.getText().toString(), id, uri.toString(), FirebaseAuth.getInstance().getCurrentUser().getUid());
                                 Snackbar.make(findViewById(R.id.rootView), R.string.success_upload, Snackbar.LENGTH_SHORT).show();
-                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                hideLoading();
-                                startActivity(intent);
+                                FirebaseFirestore firebase = FirebaseFirestore.getInstance();
+                                firebase.collection("users").whereEqualTo("id", FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener((value, error) -> {
+                                    for(DocumentSnapshot documentSnapshot: value.getDocuments()) {
+                                        Boolean isAdmin = (Boolean)documentSnapshot.get("isAdmin");
+                                        Intent i = new Intent(getBaseContext(), MainActivity.class);
+                                        i.putExtra("isAdmin", isAdmin);
+                                        startActivity(i);
+                                        break;
+                                    }
+                                });
                             }));
                 }
 

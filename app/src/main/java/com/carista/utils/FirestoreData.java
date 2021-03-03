@@ -6,7 +6,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.carista.R;
 import com.carista.data.StickerItem;
 import com.carista.data.StickerPack;
@@ -21,6 +20,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -215,8 +216,12 @@ public class FirestoreData {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         String userId = String.valueOf(documentSnapshot.get("userId"));
-                        if (userId.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
-                            firestore.collection("posts").document(documentSnapshot.getId()).delete();
+                        firestore.collection("posts").document(documentSnapshot.getId()).delete().addOnSuccessListener(Void -> {
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference storageRef = storage.getReference("posts");
+                            StorageReference imageRef = storageRef.child(id + ".jpg");
+                            imageRef.delete();
+                        });
                         break;
                     }
                 }
@@ -242,4 +247,137 @@ public class FirestoreData {
             onStickersPackLoad.onStickersPacksFetching(stickerPacks);
         });
     }
+
+    public static void uploadPack(long id, String icon, String title) {
+        FirebaseFirestore firebase = FirebaseFirestore.getInstance();
+        Map<String, Object> sticker = new HashMap<>();
+        sticker.put("id", String.valueOf(id));
+        sticker.put("title", title);
+        sticker.put("icon", icon);
+        sticker.put("items", new ArrayList<HashMap<String, Object>>());
+        firebase.collection("stickers").add(sticker);
+    }
+
+    public static void addStickers(String packId, String image, String name) {
+        FirebaseFirestore firebase = FirebaseFirestore.getInstance();
+        firebase.collection("stickers").whereEqualTo("id", packId).get().addOnCompleteListener(res -> {
+            if (res.isSuccessful()) {
+                for (QueryDocumentSnapshot documentSnapshot : res.getResult()) {
+                    ArrayList<HashMap<String, Object>> items = (ArrayList<HashMap<String, Object>>) documentSnapshot.get("items");
+                    HashMap<String, Object> newItem = new HashMap<>();
+                    newItem.put("name", name);
+                    newItem.put("image", image);
+                    items.add(newItem);
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("items", items);
+                    firebase.collection("stickers").document(documentSnapshot.getId()).update(updates);
+                    break;
+                }
+            }
+        });
+    }
+
+    public static void uploadPackNickname(String nickname, String id) {
+        FirebaseFirestore firebase = FirebaseFirestore.getInstance();
+        firebase.collection("stickers").whereEqualTo("id", id).addSnapshotListener(
+                new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put("title", nickname);
+                            firebase.collection("stickers").document(documentSnapshot.getId()).update(updates);
+                            break;
+                        }
+                    }
+                });
+    }
+
+    public static void removePack(String id) {
+        FirebaseFirestore firebase = FirebaseFirestore.getInstance();
+        firebase.collection("stickers").whereEqualTo("id", id).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                        firebase.collection("stickers").document(documentSnapshot.getId()).delete();
+                    }
+                }
+            }
+        });
+    }
+
+    public static void uploadPackIconLink(String avatarURL, String id) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("stickers").whereEqualTo("id", id).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("icon", avatarURL);
+                    firestore.collection("stickers").document(documentSnapshot.getId()).update(updates);
+                    break;
+                }
+            }
+        });
+    }
+
+    public static void uploadStickerNickname(String nickname, String packid, int position) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("stickers").whereEqualTo("id", packid).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                    ArrayList<HashMap<String, Object>> items = (ArrayList<HashMap<String, Object>>) documentSnapshot.get("items");
+                    HashMap<String, Object> newItem = items.get(position);
+                    newItem.put("name", nickname);
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("items", items);
+                    firestore.collection("stickers").document(documentSnapshot.getId()).update(updates);
+                    break;
+                }
+            }
+        });
+    }
+
+    public static void removeSticker(String packId, int position) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("stickers").whereEqualTo("id", packId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                        ArrayList<HashMap<String, Object>> items = (ArrayList<HashMap<String, Object>>) documentSnapshot.get("items");
+                        HashMap<String, Object> newItem = items.get(position);
+                        items.remove(newItem);
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("items", items);
+                        firestore.collection("stickers").document(documentSnapshot.getId()).update(updates);
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    public static void uploadStickerIconLink(String stickerURL, String packId, int position) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("stickers").whereEqualTo("id", packId).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                    ArrayList<HashMap<String, Object>> items = (ArrayList<HashMap<String, Object>>) documentSnapshot.get("items");
+                    HashMap<String, Object> newItem = items.get(position);
+                    newItem.put("image", stickerURL);
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("items", items);
+                    firestore.collection("stickers").document(documentSnapshot.getId()).update(updates);
+                    break;
+                }
+            }
+        });
+    }
+
+
 }
